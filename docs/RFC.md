@@ -55,7 +55,13 @@ A análise das respostas permitiu identificar padrões relevantes entre os parti
 66,7% acham interessante a função de “nota do currículo”.  
 88,9% acham interessante a feature de “sugestão de melhoria”.  
 88,9% acham interessante a feature de “comparação de vagas”.  
-66,7% acham que um sistema de análise de currículos automático seria muito útil.  
+66,7% acham que um sistema de análise de currículos automático seria muito útil.
+
+![Gráfico 1](./imgs/img_1.png)
+
+![Gráfico 2](./imgs/img_2.png)
+
+![Gráfico 3](./imgs/img_3.png)
 
 **Interpretação dos dados:**  
 Os resultados indicam que existe uma dificuldade significativa na compreensão dos critérios de seleção, o processo atual apresenta baixa transparência, há uma demanda por automação e padronização e que tanto candidatos quanto recrutadores se beneficiariam de uma solução integrada.
@@ -86,7 +92,8 @@ Não realiza análise detalhada de currículos
 Não fornece pontuação ou ranking automático  
 Falta de transparência nos critérios de seleção  
 
-Figura 1 - Perfil do LinkedIn  
+Figura 1 - Perfil do LinkedIn
+![Perfil do LinekdIn](./imgs/img_4.png)
 Fonte: Print retirada do LinkedIn de Lucas Grimes Ceola (meu próprio linkedin).
 
 ---
@@ -110,7 +117,8 @@ Não atende recrutadores
 Baseado fortemente em palavras-chave  
 Não realiza ranking entre candidatos  
 
-Figura 2 - Relatório de exemplo (Jobscan)  
+Figura 2 - Relatório de exemplo (Jobscan)
+![Dashboard do Jobscan](./imgs/img_5.png)
 Fonte: Print retirada do website Jobscan, mostrando a interface de relatório e a pontuação obtida pela qualidade do currículo analisado.
 
 ---
