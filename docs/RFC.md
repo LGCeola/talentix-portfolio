@@ -384,6 +384,7 @@ Importante ressaltar que, como o sistema atua em processos seletivos, o algoritm
 
 ## 10. PARECER DO COMITÊ DE AVALIAÇÃO
 
+
 **Avaliador 1:** ____________________________________________________
 
 - **Status:** 
