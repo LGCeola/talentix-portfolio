@@ -242,10 +242,16 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 ## 3. FLUXO E COMPORTAMENTO DO SISTEMA
 
 ### 3.1. FLUXO PRINCIPAL DO USUÁRIO
+O fluxo principal do usuário representa o caminho esperado durante a utilização do sistema Talentix, considerando o cenário mais comum de interação de um candidato com a plataforma.
+
 ![Fluxo Principal Candidato](./imgs/Fluxo_principal_candidato.jpg)
+*Fonte: Elaborado pelo autor com o auxílio da ferramenta Draw.io (2026)*
 
 ### 3.2. FLUXOS ALTERNATIVOS
+Já o fluxo alternativo é responsável por apresentar o caminho esperado durante a utilização do sistema Talentix, considerando  um cenário de interação entre o recrutador com a plataforma.
+
 ![Fluxo Alternativo Recrutador](./imgs/Fluxo_alternativo_recrutador.jpg)
+*Fonte: Elaborado pelo autor com o auxílio da ferramenta Draw.io (2026)*
 
 ---
 
@@ -253,6 +259,7 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 
 ### 4.1. FLUXO DE NAVEGAÇÃO
 ![Fluxo de Navegação](./imgs/Fluxo_de_navegacao.png)
+*Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 ### 4.2. WIREFRAME DAS TELAS
 *(Nota: As imagens representam a estruturação das interfaces do sistema)*
@@ -269,10 +276,12 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 **Candidato:**
 
 ![Fluxo de Interação Candidato](./imgs/Fluxo_de_interacao_do_usuario_candidato.png)
+*Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 **Recrutador:**
 
 ![Fluxo de Interação Recrutador](./imgs/Fluxo_de_interacao_do_usuario_recrutador.png)
+*Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 ---
 
@@ -283,17 +292,21 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 **1. NÍVEL 1: DIAGRAMA DE CONTEXTO**
 
 ![Diagrama C1](./imgs/Diagrama_C1.png)
+*Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 **2. NÍVEL 2: DIAGRAMA DE CONTAINERS**
 
 ![Diagrama C2](./imgs/Diagrama_C2.png)
+*Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 **3. NÍVEL 3: DIAGRAMA DE COMPONENTES**
 
 ![Diagrama C3](./imgs/Diagrama_C3.png)
+*Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 ### 5.2. MODELO DE DADOS
 ![Diagrama Entidade Relacional](./imgs/Diagrama_entidade_relacional.png)
+*Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 ### 5.3. PRINCIPAIS COMPONENTES
 1. **AuthController:** Responsável por garantir acessos seguros via tokens, como o JWT, protegendo as rotas de candidatos e recrutadores conforme as boas práticas (RNF03 e RNF04).
