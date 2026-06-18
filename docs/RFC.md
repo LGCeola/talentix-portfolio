@@ -64,8 +64,9 @@ Para validar a viabilidade e necessidade de desenvolvimento de um sistema de an�
 - **Pontos fortes:** Grande base de usuários, facilidade de uso, integração entre candidatos e empresas.
 - **Limitações:** Não realiza análise detalhada de currículos, não fornece pontuação ou ranking automático, falta de transparência nos critérios de seleção.
   
+  **Figura 1** - Perfil do LinkedIn
   ![Perfil do LinkedIn](./imgs/img_4.png)
-  *Figura 1 - Perfil do LinkedIn*
+  *Fonte: Print retirada do LinkedIn do próprio autor.*
 
 #### 2. Jobscan
 - **Link:** https://jobscan.co
@@ -74,8 +75,10 @@ Para validar a viabilidade e necessidade de desenvolvimento de um sistema de an�
 - **Pontos fortes:** Foco na melhoria do currículo, interface simples, feedback direto ao usuário.
 - **Limitações:** Não atende recrutadores, baseado fortemente em palavras-chave, não realiza ranking entre candidatos.
 
+  **Figura 2** - Relatório de exemplo (Jobscan)
   ![Relatório Jobscan](./imgs/img_5.png)
-  *Figura 2 - Relatório de exemplo (Jobscan)*
+  *Fonte: Print retirada do website Jobscan, mostrando a interface de relatório e a pontuação obtida pela qualidade do currículo analisado.*
+  
 
 #### 3. Workable
 - **Link:** https://www.workable.com
@@ -84,8 +87,9 @@ Para validar a viabilidade e necessidade de desenvolvimento de um sistema de an�
 - **Pontos fortes:** Sistema completo de recrutamento, organização do processo seletivo, integração com outras ferramentas.
 - **Limitações:** Alto custo, triagem pouco transparente, dependência de filtros simples.
 
+  **Figura 3** - Dashboard do serviço Workable
   ![Dashboard Workable](./imgs/img_6.png)
-  *Figura 3 - Dashboard do serviço Workable*
+  *Fonte: Imagem retirada do website Workable, mostrando a interface do serviço.*  
 
 #### 4. HireVue
 - **Link:** https://www.hirevue.com
@@ -94,8 +98,9 @@ Para validar a viabilidade e necessidade de desenvolvimento de um sistema de an�
 - **Pontos fortes:** Avaliação mais aprofundada, escalável.
 - **Limitações:** Processo complexo, foco fora da análise de currículo, alta barreira de uso.
 
+  **Figura 4** - Ranqueamento de candidatos (HireVue)
   ![Dashboard HireVue](./imgs/img_7.png)
-  *Figura 4 - Ranqueamento de candidatos (HireVue)*
+  *Fonte: Imagem retirada do website HireVue, apresentando o nível de qualificação de dois ou mais candidatos a uma vaga de emprego.*
 
 #### Resumo Analítico
 
@@ -262,9 +267,11 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 
 ### 4.3. FLUXO DE INTERAÇÃO DO USUÁRIO
 **Candidato:**
+
 ![Fluxo de Interação Candidato](./imgs/Fluxo_de_interacao_do_usuario_candidato.png)
 
 **Recrutador:**
+
 ![Fluxo de Interação Recrutador](./imgs/Fluxo_de_interacao_do_usuario_recrutador.png)
 
 ---
@@ -274,12 +281,15 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 ### 5.1. DIAGRAMA C4
 
 **1. NÍVEL 1: DIAGRAMA DE CONTEXTO**
+
 ![Diagrama C1](./imgs/Diagrama_C1.png)
 
 **2. NÍVEL 2: DIAGRAMA DE CONTAINERS**
+
 ![Diagrama C2](./imgs/Diagrama_C2.png)
 
 **3. NÍVEL 3: DIAGRAMA DE COMPONENTES**
+
 ![Diagrama C3](./imgs/Diagrama_C3.png)
 
 ### 5.2. MODELO DE DADOS
@@ -354,14 +364,14 @@ Importante ressaltar que, como o sistema atua em processos seletivos, o algoritm
 - **Cargo:** Recrutador / Analista de RH
 - **Experiência:** X anos
 
-**Pergunta 1: Como é realizado atualmente o processo de triagem de currículos?**
+**Pergunta 1**: Como é realizado atualmente o processo de triagem de currículos?
 *Resposta:* [A preencher]
 
-**Pergunta 2: Quais são as maiores dificuldades encontradas durante esse processo?**
+**Pergunta 2**: Quais são as maiores dificuldades encontradas durante esse processo?
 *Resposta:* [A preencher]
 
-**Pergunta 3: Um sistema que realiza uma análise automática poderia ajudar?**
+**Pergunta 3**: Um sistema que realiza uma análise automática poderia ajudar?
 *Resposta:* [A preencher]
 
-**Pergunta 4: Quais informações seriam importantes visualizar em uma ferramenta desse tipo?**
+**Pergunta 4**: Quais informações seriam importantes visualizar em uma ferramenta desse tipo?
 *Resposta:* [A preencher]
