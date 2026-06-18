@@ -382,25 +382,31 @@ Importante ressaltar que, como o sistema atua em processos seletivos, o algoritm
 
 ---
 
-## [cite_start]10. PARECER DO COMITÊ DE AVALIAÇÃO [cite: 877]
+## 10. PARECER DO COMITÊ DE AVALIAÇÃO
 
-[cite_start]**Avaliador 1:** ____________________________________________________ [cite: 878]
+**Avaliador 1:** ____________________________________________________
 
-- [cite_start]**Status:** - [ ] Aprovado [cite: 881]
-  - [ ] [cite_start]Ajustar [cite: 881]
-- [cite_start]**Observações:** [cite: 882]
+- **Status:** 
+  - [ ] Aprovado
+  - [ ] Ajustar
+- **Observações:** 
+
 <br><br><br>
 
-[cite_start]**Avaliador 2:** ____________________________________________________ [cite: 883]
+**Avaliador 2:** ____________________________________________________
 
-- [cite_start]**Status:** - [ ] Aprovado [cite: 886]
-  - [ ] [cite_start]Ajustar [cite: 886]
-- [cite_start]**Observações:** [cite: 887]
+- **Status:** 
+  - [ ] Aprovado
+  - [ ] Ajustar
+- **Observações:** 
+
 <br><br><br>
 
-[cite_start]**Avaliador 3:** ____________________________________________________ [cite: 888]
+**Avaliador 3:** ____________________________________________________
 
-- [cite_start]**Status:** - [ ] Aprovado [cite: 891]
-  - [ ] [cite_start]Ajustar [cite: 891]
-- [cite_start]**Observações:** [cite: 892]
+- **Status:** 
+  - [ ] Aprovado
+  - [ ] Ajustar
+- **Observações:** 
+
 <br><br><br>
