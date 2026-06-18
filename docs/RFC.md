@@ -365,6 +365,7 @@ Importante ressaltar que, como o sistema atua em processos seletivos, o algoritm
 - **Experiência:** X anos
 
 **Pergunta 1**: Como é realizado atualmente o processo de triagem de currículos?
+
 *Resposta:* [A preencher]
 
 **Pergunta 2**: Quais são as maiores dificuldades encontradas durante esse processo?
