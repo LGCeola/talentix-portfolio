@@ -267,7 +267,6 @@ Já o fluxo alternativo é responsável por apresentar o caminho esperado durant
 
 
 ### 4.2. WIREFRAME DAS TELAS
-*(Nota: As imagens representam a estruturação das interfaces do sistema)*
 
 - Tela de Login e Cadastro.
 
@@ -288,7 +287,6 @@ Já o fluxo alternativo é responsável por apresentar o caminho esperado durant
 - Criar Vaga - Recrutadores (Formulário de Título, Descrição, Requisitos e Pesos).
 
 ![Criar Vaga - Recrutadores](./imgs/Wireframe_criar_vaga_recrutador.jpg)
-
 
 ### 4.3. FLUXO DE INTERAÇÃO DO USUÁRIO
 **Candidato:**
