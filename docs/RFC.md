@@ -379,3 +379,28 @@ Importante ressaltar que, como o sistema atua em processos seletivos, o algoritm
 **Pergunta 4**: Quais informações seriam importantes visualizar em uma ferramenta desse tipo?
 
 *Resposta:* [A preencher]
+
+---
+
+## [cite_start]10. PARECER DO COMITÊ DE AVALIAÇÃO [cite: 877]
+
+[cite_start]**Avaliador 1:** ____________________________________________________ [cite: 878]
+
+- [cite_start]**Status:** - [ ] Aprovado [cite: 881]
+  - [ ] [cite_start]Ajustar [cite: 881]
+- [cite_start]**Observações:** [cite: 882]
+<br><br><br>
+
+[cite_start]**Avaliador 2:** ____________________________________________________ [cite: 883]
+
+- [cite_start]**Status:** - [ ] Aprovado [cite: 886]
+  - [ ] [cite_start]Ajustar [cite: 886]
+- [cite_start]**Observações:** [cite: 887]
+<br><br><br>
+
+[cite_start]**Avaliador 3:** ____________________________________________________ [cite: 888]
+
+- [cite_start]**Status:** - [ ] Aprovado [cite: 891]
+  - [ ] [cite_start]Ajustar [cite: 891]
+- [cite_start]**Observações:** [cite: 892]
+<br><br><br>
