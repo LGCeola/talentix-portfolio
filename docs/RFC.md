@@ -368,10 +368,13 @@ Importante ressaltar que, como o sistema atua em processos seletivos, o algoritm
 *Resposta:* [A preencher]
 
 **Pergunta 2**: Quais são as maiores dificuldades encontradas durante esse processo?
+
 *Resposta:* [A preencher]
 
 **Pergunta 3**: Um sistema que realiza uma análise automática poderia ajudar?
+
 *Resposta:* [A preencher]
 
 **Pergunta 4**: Quais informações seriam importantes visualizar em uma ferramenta desse tipo?
+
 *Resposta:* [A preencher]
