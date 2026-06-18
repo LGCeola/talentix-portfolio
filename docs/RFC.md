@@ -47,9 +47,9 @@ A análise das respostas permitiu identificar padrões relevantes entre os parti
 
 > *(Nota: As imagens abaixo representam os gráficos extraídos da pesquisa)*
 
-![Pesquisa com Usuários 1](docs/imgs/img_1.png)
-![Pesquisa com Usuários 2](docs/imgs/img_2.png)
-![Pesquisa com Usuários 3](docs/imgs/img_3.png)
+![Pesquisa com Usuários 1](./imgs/img_1.png)
+![Pesquisa com Usuários 2](./imgs/img_2.png)
+![Pesquisa com Usuários 3](./imgs/img_3.png)
 
 **Interpretação dos dados:**
 Os resultados indicam que existe uma dificuldade significativa na compreensão dos critérios de seleção. O processo atual apresenta baixa transparência, indicando uma forte demanda por automação e padronização, mostrando que tanto candidatos quanto recrutadores se beneficiariam de uma solução integrada.
@@ -64,7 +64,7 @@ Para validar a viabilidade e necessidade de desenvolvimento de um sistema de an�
 - **Pontos fortes:** Grande base de usuários, facilidade de uso, integração entre candidatos e empresas.
 - **Limitações:** Não realiza análise detalhada de currículos, não fornece pontuação ou ranking automático, falta de transparência nos critérios de seleção.
   
-  ![Perfil do LinkedIn](docs/imgs/img_4.png)
+  ![Perfil do LinkedIn](./imgs/img_4.png)
   *Figura 1 - Perfil do LinkedIn*
 
 #### 2. Jobscan
@@ -74,7 +74,7 @@ Para validar a viabilidade e necessidade de desenvolvimento de um sistema de an�
 - **Pontos fortes:** Foco na melhoria do currículo, interface simples, feedback direto ao usuário.
 - **Limitações:** Não atende recrutadores, baseado fortemente em palavras-chave, não realiza ranking entre candidatos.
 
-  ![Relatório Jobscan](docs/imgs/img_5.png)
+  ![Relatório Jobscan](./imgs/img_5.png)
   *Figura 2 - Relatório de exemplo (Jobscan)*
 
 #### 3. Workable
@@ -84,7 +84,7 @@ Para validar a viabilidade e necessidade de desenvolvimento de um sistema de an�
 - **Pontos fortes:** Sistema completo de recrutamento, organização do processo seletivo, integração com outras ferramentas.
 - **Limitações:** Alto custo, triagem pouco transparente, dependência de filtros simples.
 
-  ![Dashboard Workable](docs/imgs/img_6.png)
+  ![Dashboard Workable](./imgs/img_6.png)
   *Figura 3 - Dashboard do serviço Workable*
 
 #### 4. HireVue
@@ -94,7 +94,7 @@ Para validar a viabilidade e necessidade de desenvolvimento de um sistema de an�
 - **Pontos fortes:** Avaliação mais aprofundada, escalável.
 - **Limitações:** Processo complexo, foco fora da análise de currículo, alta barreira de uso.
 
-  ![Dashboard HireVue](docs/imgs/img_7.png)
+  ![Dashboard HireVue](./imgs/img_7.png)
   *Figura 4 - Ranqueamento de candidatos (HireVue)*
 
 #### Resumo Analítico
@@ -177,7 +177,7 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 - **Contexto de uso:** Mariana utiliza a plataforma para criar vagas, definir requisitos e receber automaticamente um ranking dos candidatos mais compatíveis. O sistema auxilia na tomada de decisão, fornecendo pontuação e justificativas que tornam o processo seletivo mais transparente e organizado.
 
 ### 2.2. CASOS DE USO PRINCIPAIS
-![Diagrama de Caso de Uso Talentix](docs/imgs/Diagrama%20de%20Caso%20de%20Uso%20-%20Talentix.jpg)
+![Diagrama de Caso de Uso](./imgs/Diagrama_de_caso_de_uso.jpg)
 
 ### 2.3. REQUISITOS FUNCIONAIS (RF)
 
@@ -237,17 +237,17 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 ## 3. FLUXO E COMPORTAMENTO DO SISTEMA
 
 ### 3.1. FLUXO PRINCIPAL DO USUÁRIO
-![Fluxo Principal Candidato](docs/imgs/RFC%20-%20Fluxo%20Principal%20(Candidato).jpg)
+![Fluxo Principal Candidato](./imgs/Fluxo_principal_candidato.jpg)
 
 ### 3.2. FLUXOS ALTERNATIVOS
-![Fluxo Alternativo Recrutador](docs/imgs/RFC%20-%20Fluxo%20Alternativo%20(Recrutador).jpg)
+![Fluxo Alternativo Recrutador](./imgs/Fluxo_alternativo_recrutador.jpg)
 
 ---
 
 ## 4. MOCKUPS E EXPERIÊNCIA DO USUÁRIO (UX)
 
 ### 4.1. FLUXO DE NAVEGAÇÃO
-![Fluxo de Navegação](docs/imgs/Fluxo%20de%20Navega%C3%A7%C3%A3o.png)
+![Fluxo de Navegação](./imgs/Fluxo_de_navegacao.png)
 
 ### 4.2. WIREFRAME DAS TELAS
 *(Nota: As imagens representam a estruturação das interfaces do sistema)*
@@ -262,10 +262,10 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 
 ### 4.3. FLUXO DE INTERAÇÃO DO USUÁRIO
 **Candidato:**
-![Fluxo de Interação Candidato](docs/imgs/Fluxo%20de%20Intera%C3%A7%C3%A3o%20do%20Usu%C3%A1rio%20(Candidato).png)
+![Fluxo de Interação Candidato](./imgs/Fluxo_de_interacao_do_usuario_candidato.png)
 
 **Recrutador:**
-![Fluxo de Interação Recrutador](docs/imgs/Fluxo%20de%20Intera%C3%A7%C3%A3o%20do%20Usu%C3%A1rio%20(Recrutador).png)
+![Fluxo de Interação Recrutador](./imgs/Fluxo_de_interacao_do_usuario_recrutador.png)
 
 ---
 
@@ -274,16 +274,16 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 ### 5.1. DIAGRAMA C4
 
 **1. NÍVEL 1: DIAGRAMA DE CONTEXTO**
-![Diagrama C1](docs/imgs/Diagrama%20C1.png)
+![Diagrama C1](./imgs/Diagrama_C1.png)
 
 **2. NÍVEL 2: DIAGRAMA DE CONTAINERS**
-![Diagrama C2](docs/imgs/Diagrama%20C2.png)
+![Diagrama C2](./imgs/Diagrama_C2.png)
 
 **3. NÍVEL 3: DIAGRAMA DE COMPONENTES**
-![Diagrama C3](docs/imgs/Diagrama%20C3.png)
+![Diagrama C3](./imgs/Diagrama_C3.png)
 
 ### 5.2. MODELO DE DADOS
-![Diagrama Entidade Relacional](docs/imgs/Diagrama_entidade-relacional.png)
+![Diagrama Entidade Relacional](./imgs/Diagrama_entidade_relacional.png)
 
 ### 5.3. PRINCIPAIS COMPONENTES
 1. **AuthController:** Responsável por garantir acessos seguros via tokens, como o JWT, protegendo as rotas de candidatos e recrutadores conforme as boas práticas (RNF03 e RNF04).
