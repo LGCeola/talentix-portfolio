@@ -248,6 +248,7 @@ O fluxo principal do usuário representa o caminho esperado durante a utilizaç�
 
 *Fonte: Elaborado pelo autor com o auxílio da ferramenta Draw.io (2026)*
 
+
 ### 3.2. FLUXOS ALTERNATIVOS
 Já o fluxo alternativo é responsável por apresentar o caminho esperado durante a utilização do sistema Talentix, considerando  um cenário de interação entre o recrutador com a plataforma.
 
@@ -264,23 +265,30 @@ Já o fluxo alternativo é responsável por apresentar o caminho esperado durant
 
 *Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
+
 ### 4.2. WIREFRAME DAS TELAS
 *(Nota: As imagens representam a estruturação das interfaces do sistema)*
 
 - Tela de Login e Cadastro.
+
 ![Login e Cadastro](./imgs/Wireframe_tela_login.jpg)
 
 - Dashboard - Candidatos (Visão geral de pontuações e compatibilidade com vagas).
+
 ![Dashboard Candidatos](./imgs/Wireframe_dashboard_candidato.jpg)
 
 - Resultado da Análise Candidatos (Habilidades detectadas e melhorias).
+
 ![Resultado da Análise Candidatos](./imgs/Wireframe_resultado_analise_candidato.jpg)
 
 - Dashboard - Recrutadores (Vagas ativas e média de pontuações).
+
 ![Dashboard - Recrutadores](./imgs/Wireframe_dashboard_recrutador.jpg)
 
 - Criar Vaga - Recrutadores (Formulário de Título, Descrição, Requisitos e Pesos).
+
 ![Criar Vaga - Recrutadores](./imgs/Wireframe_criar_vaga_recrutador.jpg)
+
 
 ### 4.3. FLUXO DE INTERAÇÃO DO USUÁRIO
 **Candidato:**
