@@ -245,12 +245,14 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 O fluxo principal do usuário representa o caminho esperado durante a utilização do sistema Talentix, considerando o cenário mais comum de interação de um candidato com a plataforma.
 
 ![Fluxo Principal Candidato](./imgs/Fluxo_principal_candidato.jpg)
+
 *Fonte: Elaborado pelo autor com o auxílio da ferramenta Draw.io (2026)*
 
 ### 3.2. FLUXOS ALTERNATIVOS
 Já o fluxo alternativo é responsável por apresentar o caminho esperado durante a utilização do sistema Talentix, considerando  um cenário de interação entre o recrutador com a plataforma.
 
 ![Fluxo Alternativo Recrutador](./imgs/Fluxo_alternativo_recrutador.jpg)
+
 *Fonte: Elaborado pelo autor com o auxílio da ferramenta Draw.io (2026)*
 
 ---
@@ -259,28 +261,38 @@ Já o fluxo alternativo é responsável por apresentar o caminho esperado durant
 
 ### 4.1. FLUXO DE NAVEGAÇÃO
 ![Fluxo de Navegação](./imgs/Fluxo_de_navegacao.png)
+
 *Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 ### 4.2. WIREFRAME DAS TELAS
 *(Nota: As imagens representam a estruturação das interfaces do sistema)*
 
 - Tela de Login e Cadastro.
-- Dashboard - Candidatos (Visão geral de pontuações e compatibilidade com vagas).
-- Resultado da Análise Candidatos (Habilidades detectadas e melhorias).
-- Dashboard - Recrutadores (Vagas ativas e média de pontuações).
-- Criar Vaga - Recrutadores (Formulário de Título, Descrição, Requisitos e Pesos).
+![Login e Cadastro](./imgs/Wireframe_tela_login.jpg)
 
-*(Se desejar renderizar wireframes adicionais exportados na pasta imgs, substitua esta seção pelos respectivos `![Tela X](docs/imgs/...)`)*
+- Dashboard - Candidatos (Visão geral de pontuações e compatibilidade com vagas).
+![Dashboard Candidatos](./imgs/Wireframe_dashboard_candidato.jpg)
+
+- Resultado da Análise Candidatos (Habilidades detectadas e melhorias).
+![Resultado da Análise Candidatos](./imgs/Wireframe_resultado_analise_candidato.jpg)
+
+- Dashboard - Recrutadores (Vagas ativas e média de pontuações).
+![Dashboard - Recrutadores](./imgs/Wireframe_dashboard_recrutador.jpg)
+
+- Criar Vaga - Recrutadores (Formulário de Título, Descrição, Requisitos e Pesos).
+![Criar Vaga - Recrutadores](./imgs/Wireframe_criar_vaga_recrutador.jpg)
 
 ### 4.3. FLUXO DE INTERAÇÃO DO USUÁRIO
 **Candidato:**
 
 ![Fluxo de Interação Candidato](./imgs/Fluxo_de_interacao_do_usuario_candidato.png)
+
 *Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 **Recrutador:**
 
 ![Fluxo de Interação Recrutador](./imgs/Fluxo_de_interacao_do_usuario_recrutador.png)
+
 *Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 ---
@@ -292,20 +304,24 @@ Já o fluxo alternativo é responsável por apresentar o caminho esperado durant
 **1. NÍVEL 1: DIAGRAMA DE CONTEXTO**
 
 ![Diagrama C1](./imgs/Diagrama_C1.png)
+
 *Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 **2. NÍVEL 2: DIAGRAMA DE CONTAINERS**
 
 ![Diagrama C2](./imgs/Diagrama_C2.png)
+
 *Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 **3. NÍVEL 3: DIAGRAMA DE COMPONENTES**
 
 ![Diagrama C3](./imgs/Diagrama_C3.png)
+
 *Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 ### 5.2. MODELO DE DADOS
 ![Diagrama Entidade Relacional](./imgs/Diagrama_entidade_relacional.png)
+
 *Fonte: Elaborado pelo autor com o auxílio da ferramenta PlantUML (2026)*
 
 ### 5.3. PRINCIPAIS COMPONENTES
