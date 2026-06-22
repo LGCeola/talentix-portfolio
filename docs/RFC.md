@@ -395,25 +395,44 @@ Importante ressaltar que, como o sistema atua em processos seletivos, o algoritm
 ## 9. APÊNDICES
 
 ### 9.1 ENTREVISTA COM USUÁRIO
-- **Entrevistado:** [Nome]
-- **Cargo:** Recrutador / Analista de RH
-- **Experiência:** X anos
+- **Entrevistado:**
+Sandro Marcio Ceola
+- **Cargo:**
+Analista de RH
+- **Experiência:**
+23 anos
 
-**Pergunta 1**: Como é realizado atualmente o processo de triagem de currículos?
+**Pergunta 1**: Como ocorre atualmente o processo de definição dos requisitos de uma vaga?
 
-*Resposta:* [A preencher]
+*Resposta:* 
+Primeiramente, o profissional de RH e o gestor da área definem os requisitos básicos para a vaga, como escolaridade, tempo de experiência, conhecimentos técnicos e competências comportamentais. Também podem ser adicionados requisitos desejáveis, como conhecimento em idiomas, experiência com softwares específicos ou outras características relevantes.
 
-**Pergunta 2**: Quais são as maiores dificuldades encontradas durante esse processo?
+*Análise:*
+Foi identificado que o processo seletivo depende de uma definição clara dos critérios da vaga. Dessa forma, o Talentix poderá utilizar esses critérios como base para realizar comparações entre candidatos e oportunidades.
 
-*Resposta:* [A preencher]
+**Pergunta 2**: Como os currículos são organizados e analisados atualmente?
 
-**Pergunta 3**: Um sistema que realiza uma análise automática poderia ajudar?
+*Resposta:* 
+A empresa utiliza a plataforma Gupy, que funciona como uma biblioteca de currículos, armazenando e apresentando candidatos conforme palavras-chave pesquisadas. Após essa filtragem inicial, um recrutador realiza a análise dos currículos pela plataforma.
 
-*Resposta:* [A preencher]
+*Análise:*
+Observa-se que soluções atuais utilizam mecanismos baseados principalmente em palavras-chave para realizar uma primeira seleção. Essa abordagem tende a reduzir o tempo de busca, porém apresenta limitações relacionadas à compreensão do contexto do currículo, ou seja, reforçando a proposta do Talentix de utilizar critérios mais amplos para análise.
 
-**Pergunta 4**: Quais informações seriam importantes visualizar em uma ferramenta desse tipo?
+**Pergunta 3**: Além do currículo, quais outros fatores são considerados na seleção de um candidato?
 
-*Resposta:* [A preencher]
+*Resposta:* 
+Também é realizado um bate-papo para verificar se os valores do candidato estão alinhados com os valores da empresa. Após isso, os candidatos pré-selecionados podem realizar testes ou entrevistas.
+
+*Análise:*
+A entrevista demonstra que o currículo é apenas uma etapa inicial do processo seletivo, sendo necessário considerar fatores comportamentais e culturais.
+
+**Pergunta 4**: Quais melhorias poderiam ser aplicadas no processo atual?
+
+*Resposta:* 
+Acredito que deveria existir uma sistemática mais elaborada com formulário de cadastro de currículo.
+
+*Análise:*
+A resposta indica uma oportunidade de melhoria relacionada à padronização das informações profissionais dos candidatos.
 
 ---
 
@@ -431,15 +450,6 @@ Importante ressaltar que, como o sistema atua em processos seletivos, o algoritm
 <br><br><br>
 
 **Avaliador 2:** ____________________________________________________
-
-- **Status:** 
-  - [ ] Aprovado
-  - [ ] Ajustar
-- **Observações:** 
-
-<br><br><br>
-
-**Avaliador 3:** ____________________________________________________
 
 - **Status:** 
   - [ ] Aprovado
