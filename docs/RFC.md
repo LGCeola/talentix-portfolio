@@ -409,7 +409,7 @@ Primeiramente, o profissional de RH e o gestor da área definem os requisitos b�
 
 *Análise:*
 Foi identificado que o processo seletivo depende de uma definição clara dos critérios da vaga. Dessa forma, o Talentix poderá utilizar esses critérios como base para realizar comparações entre candidatos e oportunidades.
-<br>
+<br><br><br>
 **Pergunta 2**: Como os currículos são organizados e analisados atualmente?
 
 *Resposta:* 
@@ -417,7 +417,7 @@ A empresa utiliza a plataforma Gupy, que funciona como uma biblioteca de curríc
 
 *Análise:*
 Observa-se que soluções atuais utilizam mecanismos baseados principalmente em palavras-chave para realizar uma primeira seleção. Essa abordagem tende a reduzir o tempo de busca, porém apresenta limitações relacionadas à compreensão do contexto do currículo, ou seja, reforçando a proposta do Talentix de utilizar critérios mais amplos para análise.
-<br>
+<br><br><br>
 **Pergunta 3**: Além do currículo, quais outros fatores são considerados na seleção de um candidato?
 
 *Resposta:* 
@@ -425,7 +425,7 @@ Também é realizado um bate-papo para verificar se os valores do candidato est�
 
 *Análise:*
 A entrevista demonstra que o currículo é apenas uma etapa inicial do processo seletivo, sendo necessário considerar fatores comportamentais e culturais.
-<br>
+<br><br><br>
 **Pergunta 4**: Quais melhorias poderiam ser aplicadas no processo atual?
 
 *Resposta:* 
