@@ -402,7 +402,7 @@ Analista de RH
 - **Experiência:**
 23 anos
 
-<br><br><br>
+<br><br>
 **Pergunta 1**: Como ocorre atualmente o processo de definição dos requisitos de uma vaga?
 
 *Resposta:* 
