@@ -1,0 +1,23 @@
+# ==============================================================================
+# .gitignore — apps/backend (Python / FastAPI)
+# ==============================================================================
+
+# Variáveis de ambiente (segredos locais)
+.env
+.env.*
+!.env.example
+
+# Cache do Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Pacotes e distribuição
+*.egg-info/
+dist/
+build/
+
+# Testes e cobertura
+.pytest_cache/
+.coverage
+htmlcov/

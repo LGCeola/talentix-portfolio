@@ -1,10 +1,19 @@
-.env
-__pycache__/
+# ==============================================================================
+# .gitignore — Raiz do Monorepo
+# Regras globais: SO, IDEs e ambiente virtual Python compartilhado.
+# Regras específicas de cada app ficam em apps/backend/ e apps/web/.
+# ==============================================================================
+
+# Ambiente virtual Python
 .venv/
-*.pyc
-*.pyo
-*.egg-info/
-.pytest_cache/
-.coverage
-dist/
-build/
+
+# Editores e IDEs
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Sistema Operacional
+.DS_Store
+Thumbs.db
+desktop.ini
