@@ -16,7 +16,7 @@ class Vacancy(Base):
   recruiter_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), nullable=False, index=True)
   title: Mapped[str] = mapped_column(String(100), nullable=False)
   description: Mapped[str] = mapped_column(Text, nullable=False)
-  status: Mapped[VacancyStatus] = mapped_column(SQLEnum(VacancyStatus, name="status_vaga"), default=VacancyStatus.OPEN, nullable=False)
+  status: Mapped[VacancyStatus] = mapped_column(SQLEnum(VacancyStatus, name="status_vaga", values_callable=lambda enum: [member.value for member in enum]), default=VacancyStatus.OPEN, nullable=False)
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
   recruiter: Mapped["User"] = relationship(back_populates="vacancies", foreign_keys=[recruiter_id])

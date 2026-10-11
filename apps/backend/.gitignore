@@ -7,6 +7,9 @@
 .env.*
 !.env.example
 
+# Currículos enviados pelos usuários (dados pessoais — LGPD)
+uploads/
+
 # Cache do Python
 __pycache__/
 *.pyc

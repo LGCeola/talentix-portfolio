@@ -16,7 +16,7 @@ class User(Base):
   name: Mapped[str] = mapped_column(String(100), nullable=False)
   email: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
   password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-  user_type: Mapped[UserType] = mapped_column(SQLEnum(UserType, name="tipo_usuario"), nullable=False)
+  user_type: Mapped[UserType] = mapped_column(SQLEnum(UserType, name="tipo_usuario", values_callable=lambda enum: [member.value for member in enum]), nullable=False)
   created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
   vacancies: Mapped[list["Vacancy"]] = relationship(back_populates="recruiter", foreign_keys="Vacancy.recruiter_id")

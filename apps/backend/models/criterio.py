@@ -16,7 +16,7 @@ class Criterion(Base):
   id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
   vacancy_id: Mapped[int] = mapped_column(Integer, ForeignKey("vagas.id"), nullable=False, index=True)
   name: Mapped[str] = mapped_column(String(50), nullable=False)
-  criterion_type: Mapped[CriterionType] = mapped_column(SQLEnum(CriterionType, name="tipo_criterio"), nullable=False)
+  criterion_type: Mapped[CriterionType] = mapped_column(SQLEnum(CriterionType, name="tipo_criterio", values_callable=lambda enum: [member.value for member in enum]), nullable=False)
   weight: Mapped[float] = mapped_column(Numeric(4, 2), nullable=False)
 
   vacancy: Mapped["Vacancy"] = relationship(back_populates="criteria")

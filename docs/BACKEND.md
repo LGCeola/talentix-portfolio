@@ -15,6 +15,17 @@
 | `POST` | `/api/auth/login` | Autentica e devolve um access token JWT. |
 | `GET` | `/api/auth/me` | Obtém o usuário autenticado. |
 
+## Currículos (somente candidatos)
+
+| Método | Rota | Finalidade |
+| --- | --- | --- |
+| `POST` | `/api/curriculos` | Envia um currículo (`multipart/form-data`, campo `file`). Aceita PDF ou TXT até `MAX_RESUME_SIZE_MB` (padrão 5 MB) e extrai o texto. |
+| `GET` | `/api/curriculos` | Lista os currículos do candidato autenticado. |
+| `GET` | `/api/curriculos/{id}` | Detalhe de um currículo próprio, incluindo o texto extraído. |
+| `DELETE` | `/api/curriculos/{id}` | Exclui o currículo e o arquivo (bloqueado se houver candidaturas vinculadas). |
+
+Os arquivos são gravados em `UPLOAD_DIR` (padrão `apps/backend/uploads/`, fora do git) com nome gerado pelo servidor. Recrutadores recebem `403`; um candidato que tenta acessar o currículo de outro recebe `404`.
+
 Exemplo de cadastro:
 
 ```json

@@ -412,3 +412,11 @@ input:focus {
     padding: 48px 25px;
   }
 }
+
+/* ─── App Layout (páginas autenticadas) ─── */
+.panel {
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}

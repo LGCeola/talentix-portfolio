@@ -9,6 +9,7 @@ class Resume(Base):
   id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
   candidate_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id"), nullable=False, index=True)
   file_url: Mapped[str] = mapped_column(String(255), nullable=False)
+  original_filename: Mapped[str] = mapped_column(String(255), nullable=False)
   extracted_text: Mapped[str] = mapped_column(Text, nullable=False)
   updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
 
