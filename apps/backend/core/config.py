@@ -4,7 +4,8 @@ from pydantic_settings import BaseSettings
 
 # Resolve o .env sempre relativo a este arquivo (apps/backend/.env),
 # independentemente do diretório de trabalho em que o processo for iniciado.
-_ENV_FILE = Path(__file__).parent.parent / ".env"
+_BACKEND_DIR = Path(__file__).parent.parent
+_ENV_FILE = _BACKEND_DIR / ".env"
 
 
 class Settings(BaseSettings):
@@ -17,6 +18,9 @@ class Settings(BaseSettings):
   JWT_ALGORITHM: str = "HS256"
   ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
   REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+  UPLOAD_DIR: Path = _BACKEND_DIR / "uploads"
+  MAX_RESUME_SIZE_MB: int = 5
 
   class Config:
     env_file = str(_ENV_FILE)

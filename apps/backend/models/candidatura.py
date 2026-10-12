@@ -17,7 +17,7 @@ class Application(Base):
   candidate_id: Mapped[int] = mapped_column(Integer, ForeignKey("usuarios.id"), nullable=False, index=True)
   vacancy_id: Mapped[int] = mapped_column(Integer, ForeignKey("vagas.id"), nullable=False, index=True)
   resume_id: Mapped[int] = mapped_column(Integer, ForeignKey("curriculos.id"), nullable=False)
-  status: Mapped[ApplicationStatus] = mapped_column(SQLEnum(ApplicationStatus, name="status_candidatura"), default=ApplicationStatus.PENDING, nullable=False)
+  status: Mapped[ApplicationStatus] = mapped_column(SQLEnum(ApplicationStatus, name="status_candidatura", values_callable=lambda enum: [member.value for member in enum]), default=ApplicationStatus.PENDING, nullable=False)
   overall_score: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
   score_details: Mapped[dict | None] = mapped_column(JSON, nullable=True)
   improvement_suggestions: Mapped[str | None] = mapped_column(Text, nullable=True)
