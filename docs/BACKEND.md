@@ -24,7 +24,25 @@
 | `GET` | `/api/curriculos/{id}` | Detalhe de um currículo próprio, incluindo o texto extraído. |
 | `DELETE` | `/api/curriculos/{id}` | Exclui o currículo e o arquivo (bloqueado se houver candidaturas vinculadas). |
 
-Os arquivos são gravados em `UPLOAD_DIR` (padrão `apps/backend/uploads/`, fora do git) com nome gerado pelo servidor. Recrutadores recebem `403`; um candidato que tenta acessar o currículo de outro recebe `404`.
+## Vagas (somente recrutadores)
+
+| Método | Rota | Finalidade |
+| --- | --- | --- |
+| `GET` | `/api/vagas/minhas` | Lista as vagas do recrutador com contagem de critérios e candidaturas. |
+| `POST` | `/api/vagas` | Cria uma vaga com critérios. `status`: `draft` (padrão) ou `open` (publicar). |
+| `GET` | `/api/vagas/{id}` | Detalhe de uma vaga própria com seus critérios. |
+| `PUT` | `/api/vagas/{id}` | Substitui conteúdo e critérios. Bloqueado para vagas encerradas ou que já têm candidaturas. |
+| `PATCH` | `/api/vagas/{id}/status` | Publica (`open`) ou encerra (`closed`) a vaga. |
+| `DELETE` | `/api/vagas/{id}` | Exclui a vaga — apenas rascunhos. |
+
+Regras dos critérios:
+
+- Cada critério tem nome (2–50 caracteres, sem repetir na vaga), tipo (`habilidade`, `experiencia` ou `formacao`) e peso inteiro de 1 a 100, que representa o percentual da nota final (0–100).
+- A soma dos pesos nunca passa de 100%. Rascunhos podem estar incompletos.
+- Para publicar, a vaga precisa de descrição, ao menos um critério (RN03) e pesos somando exatamente 100%.
+- Ciclo de vida: `draft` → `open` ⇄ `closed`. Rascunhos não podem ser encerrados, apenas excluídos.
+
+Os arquivos de currículo são gravados em `UPLOAD_DIR` (padrão `apps/backend/uploads/`, fora do git) com nome gerado pelo servidor. Recrutadores recebem `403`; um candidato que tenta acessar o currículo de outro recebe `404`.
 
 Exemplo de cadastro:
 
