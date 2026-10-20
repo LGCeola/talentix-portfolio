@@ -1,7 +1,11 @@
+from typing import TYPE_CHECKING
 from datetime import datetime
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from apps.backend.database.connection import Base
+
+if TYPE_CHECKING:
+  from apps.backend.models.candidatura import Application
 
 class Report(Base):
   __tablename__ = "relatorios"

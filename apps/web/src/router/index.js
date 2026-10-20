@@ -23,6 +23,18 @@ const routes = [
     component: () => import('../modules/dashboard/DashboardPage.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/vagas/nova',
+    name: 'VacancyCreate',
+    component: () => import('../modules/vagas/VacancyFormPage.vue'),
+    meta: { requiresAuth: true, role: 'recruiter' },
+  },
+  {
+    path: '/vagas/:id(\\d+)/editar',
+    name: 'VacancyEdit',
+    component: () => import('../modules/vagas/VacancyFormPage.vue'),
+    meta: { requiresAuth: true, role: 'recruiter' },
+  },
 ]
 
 const router = createRouter({
@@ -40,6 +52,16 @@ router.beforeEach((to) => {
 
   if (to.meta.guest && isAuthenticated) {
     return { name: 'Dashboard' }
+  }
+
+  if (to.meta.role) {
+    let user = null
+    try {
+      user = JSON.parse(localStorage.getItem('talentix_user'))
+    } catch {}
+    if (user?.user_type !== to.meta.role) {
+      return { name: 'Dashboard' }
+    }
   }
 })
 

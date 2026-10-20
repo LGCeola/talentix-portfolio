@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from apps.backend.core.security import hash_password, verify_password
 from apps.backend.models.usuario import User
 from apps.backend.repositories.UsuarioRepository import UsuarioRepository
-from apps.backend.schemas.usuario import UserCreate
+from apps.backend.schemas.Usuario import UserCreate
 
 
 class AuthService:

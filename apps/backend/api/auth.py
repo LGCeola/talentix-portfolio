@@ -7,7 +7,7 @@ from apps.backend.database.connection import get_db
 from apps.backend.models.usuario import User
 from apps.backend.schemas.LoginRequest import LoginRequest
 from apps.backend.schemas.LoginResponse import LoginResponse
-from apps.backend.schemas.usuario import UserCreate, UserResponse
+from apps.backend.schemas.Usuario import UserCreate, UserResponse
 from apps.backend.services.AuthService import AuthService
 
 router = APIRouter(prefix="/api/auth", tags=["Autenticação"])

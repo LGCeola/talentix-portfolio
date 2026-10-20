@@ -1,6 +1,10 @@
+from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from apps.backend.database.connection import Base
+
+if TYPE_CHECKING:
+  from apps.backend.models.relatorio import Report
 
 class Score(Base):
   __tablename__ = "pontuacoes"
