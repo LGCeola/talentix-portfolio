@@ -1,12 +1,13 @@
 from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, StringConstraints, field_validator
 
 from apps.backend.models.usuario import UserType
 
 
 class UserCreate(BaseModel):
-  name: str = Field(min_length=2, max_length=100)
+  name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=100)]
   email: str = Field(min_length=5, max_length=100)
   password: str = Field(min_length=8, max_length=128)
   user_type: UserType

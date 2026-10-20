@@ -1,33 +1,24 @@
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, StringConstraints, model_validator
 
 from apps.backend.models.criterio import CriterionType
 from apps.backend.models.vaga import VacancyStatus
 
 
 class CriterioRequest(BaseModel):
-  name: str = Field(min_length=2, max_length=50)
+  # strip_whitespace roda antes de min_length, então "   " é rejeitado em vez de virar "".
+  name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=50)]
   criterion_type: CriterionType
   weight: int = Field(ge=1, le=100, description="Percentual da nota final")
-
-  @field_validator("name")
-  @classmethod
-  def strip_name(cls, value: str) -> str:
-    return value.strip()
 
 
 class VagaRequest(BaseModel):
   """Conteúdo da vaga. Rascunhos podem estar incompletos; a publicação é validada no service."""
-  title: str = Field(min_length=3, max_length=100)
-  description: str = Field(default="", max_length=10000)
+  title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=100)]
+  description: Annotated[str, StringConstraints(strip_whitespace=True, max_length=10000)] = ""
   criteria: list[CriterioRequest] = Field(default_factory=list, max_length=30)
   status: Literal[VacancyStatus.DRAFT, VacancyStatus.OPEN] = VacancyStatus.DRAFT
-
-  @field_validator("title", "description")
-  @classmethod
-  def strip_text(cls, value: str) -> str:
-    return value.strip()
 
   @model_validator(mode="after")
   def validate_criteria(self) -> "VagaRequest":
