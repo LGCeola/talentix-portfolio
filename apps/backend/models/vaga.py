@@ -1,9 +1,15 @@
+from typing import TYPE_CHECKING
 from enum import Enum
 from datetime import datetime
 
 from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from apps.backend.database.connection import Base
+
+if TYPE_CHECKING:
+  from apps.backend.models.candidatura import Application
+  from apps.backend.models.criterio import Criterion
+  from apps.backend.models.usuario import User
 
 class VacancyStatus(str, Enum):
   DRAFT = "draft"

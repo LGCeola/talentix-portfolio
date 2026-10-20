@@ -1,8 +1,14 @@
+from typing import TYPE_CHECKING
 from datetime import datetime
 from enum import Enum
 from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, Integer, JSON, Numeric, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from apps.backend.database.connection import Base
+
+if TYPE_CHECKING:
+  from apps.backend.models.curriculo import Resume
+  from apps.backend.models.usuario import User
+  from apps.backend.models.vaga import Vacancy
 
 class ApplicationStatus(str, Enum):
   PENDING = "pending"

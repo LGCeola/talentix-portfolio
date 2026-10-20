@@ -1,8 +1,12 @@
+from typing import TYPE_CHECKING
 from enum import Enum
 
 from sqlalchemy import CheckConstraint, Enum as SQLEnum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from apps.backend.database.connection import Base
+
+if TYPE_CHECKING:
+  from apps.backend.models.vaga import Vacancy
 
 class CriterionType(str, Enum):
   SKILL = "habilidade"
