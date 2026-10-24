@@ -1,17 +1,27 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from apps.backend.core.dependencies import require_role
+from apps.backend.core.dependencies import get_current_user, require_role
 from apps.backend.database.connection import get_db
+from apps.backend.models.candidatura import Application
 from apps.backend.models.usuario import User, UserType
 from apps.backend.models.vaga import Vacancy
+from apps.backend.schemas.CandidaturaResponse import CandidaturaRecebidaResponse
 from apps.backend.schemas.VagaRequest import VagaRequest, VagaStatusRequest
-from apps.backend.schemas.VagaResponse import VagaResponse, VagaResumoResponse
+from apps.backend.schemas.VagaResponse import VagaPublicaResponse, VagaResponse, VagaResumoResponse
+from apps.backend.services.CandidaturaService import CandidaturaService
 from apps.backend.services.VagaService import VagaService
 
 router = APIRouter(prefix="/api/vagas", tags=["Vagas"])
 service = VagaService()
+candidaturas = CandidaturaService()
 recruiter_only = require_role(UserType.RECRUITER)
+candidate_only = require_role(UserType.CANDIDATE)
+
+
+@router.get("", response_model=list[VagaPublicaResponse])
+def list_open(db: Session = Depends(get_db), current_user: User = Depends(candidate_only)) -> list[VagaPublicaResponse]:
+  return service.list_open(db, current_user)
 
 
 @router.get("/minhas", response_model=list[VagaResumoResponse])
@@ -25,8 +35,13 @@ def create(payload: VagaRequest, db: Session = Depends(get_db), current_user: Us
 
 
 @router.get("/{vacancy_id}", response_model=VagaResponse)
-def get_mine(vacancy_id: int, db: Session = Depends(get_db), current_user: User = Depends(recruiter_only)) -> Vacancy:
-  return service.get_mine(db, current_user, vacancy_id)
+def get_one(vacancy_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)) -> Vacancy:
+  return service.get_visible(db, current_user, vacancy_id)
+
+
+@router.get("/{vacancy_id}/candidaturas", response_model=list[CandidaturaRecebidaResponse])
+def list_applications(vacancy_id: int, db: Session = Depends(get_db), current_user: User = Depends(recruiter_only)) -> list[Application]:
+  return candidaturas.list_received(db, current_user, vacancy_id)
 
 
 @router.put("/{vacancy_id}", response_model=VagaResponse)

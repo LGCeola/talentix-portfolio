@@ -1,11 +1,12 @@
 from pathlib import Path
+from typing import BinaryIO
 from uuid import uuid4
 
-from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from apps.backend.algorithm.parser import SUPPORTED_EXTENSIONS, ResumeParseError, extract_text
 from apps.backend.core.config import settings
+from apps.backend.core.exceptions import ArquivoMuitoGrande, Conflito, CurriculoInvalido, CurriculoNaoEncontrado, FormatoNaoSuportado
 from apps.backend.models.curriculo import Resume
 from apps.backend.models.usuario import User
 from apps.backend.repositories.CurriculoRepository import CurriculoRepository
@@ -22,26 +23,26 @@ class CurriculoService:
   def get_mine(self, db: Session, candidate: User, resume_id: int) -> Resume:
     resume = self.repository.get_by_id_and_candidate(db, resume_id, candidate.id)
     if not resume:
-      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Currículo não encontrado")
+      raise CurriculoNaoEncontrado()
     return resume
 
-  def upload(self, db: Session, candidate: User, file: UploadFile) -> Resume:
-    original_filename = Path(file.filename or "").name
+  def upload(self, db: Session, candidate: User, filename: str | None, stream: BinaryIO) -> Resume:
+    original_filename = Path(filename or "").name
     extension = Path(original_filename).suffix.lower()
     if extension not in SUPPORTED_EXTENSIONS:
-      raise HTTPException(status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, detail="Formato não suportado. Envie um arquivo PDF ou TXT")
+      raise FormatoNaoSuportado()
 
     max_bytes = settings.MAX_RESUME_SIZE_MB * 1024 * 1024
-    content = file.file.read(max_bytes + 1)
+    content = stream.read(max_bytes + 1)
     if len(content) > max_bytes:
-      raise HTTPException(status_code=status.HTTP_413_CONTENT_TOO_LARGE, detail=f"O arquivo excede o limite de {settings.MAX_RESUME_SIZE_MB} MB")
+      raise ArquivoMuitoGrande(f"O arquivo excede o limite de {settings.MAX_RESUME_SIZE_MB} MB")
     if not content:
-      raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="O arquivo enviado está vazio")
+      raise CurriculoInvalido("O arquivo enviado está vazio")
 
     try:
       text = extract_text(content, extension)
     except ResumeParseError as error:
-      raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(error)) from error
+      raise CurriculoInvalido(str(error)) from error
 
     # O nome em disco é gerado pelo servidor; o nome original serve apenas para exibição.
     relative_path = Path(str(candidate.id)) / f"{uuid4().hex}{extension}"
@@ -59,7 +60,7 @@ class CurriculoService:
   def delete(self, db: Session, candidate: User, resume_id: int) -> None:
     resume = self.get_mine(db, candidate, resume_id)
     if self.repository.has_applications(db, resume.id):
-      raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Este currículo está vinculado a candidaturas e não pode ser excluído")
+      raise Conflito("Este currículo está vinculado a candidaturas e não pode ser excluído")
 
     file_path = self.upload_dir / resume.file_url
     self.repository.delete(db, resume)

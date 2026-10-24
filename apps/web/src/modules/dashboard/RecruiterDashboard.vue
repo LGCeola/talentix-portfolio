@@ -41,6 +41,11 @@
 
           <div class="actions">
             <RouterLink
+              v-if="vacancy.status !== 'draft'"
+              class="action"
+              :to="{ name: 'VacancyApplications', params: { id: vacancy.id } }"
+            >Candidatos</RouterLink>
+            <RouterLink
               v-if="vacancy.status !== 'closed' && vacancy.applications_count === 0"
               class="action"
               :to="{ name: 'VacancyEdit', params: { id: vacancy.id } }"

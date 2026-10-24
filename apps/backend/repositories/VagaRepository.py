@@ -2,7 +2,7 @@ from sqlalchemy import exists, func, select
 from sqlalchemy.orm import Session, selectinload
 
 from apps.backend.models.candidatura import Application
-from apps.backend.models.vaga import Vacancy
+from apps.backend.models.vaga import Vacancy, VacancyStatus
 
 
 class VagaRepository:
@@ -19,6 +19,13 @@ class VagaRepository:
   def get_by_id_and_recruiter(self, db: Session, vacancy_id: int, recruiter_id: int) -> Vacancy | None:
     query = select(Vacancy).where(Vacancy.id == vacancy_id, Vacancy.recruiter_id == recruiter_id).options(selectinload(Vacancy.criteria))
     return db.scalar(query)
+
+  def list_open(self, db: Session) -> list[Vacancy]:
+    query = select(Vacancy).where(Vacancy.status == VacancyStatus.OPEN).options(selectinload(Vacancy.criteria)).order_by(Vacancy.created_at.desc(), Vacancy.id.desc())
+    return list(db.scalars(query))
+
+  def get_by_id(self, db: Session, vacancy_id: int) -> Vacancy | None:
+    return db.scalar(select(Vacancy).where(Vacancy.id == vacancy_id).options(selectinload(Vacancy.criteria)))
 
   def has_applications(self, db: Session, vacancy_id: int) -> bool:
     return db.scalar(select(exists().where(Application.vacancy_id == vacancy_id)))
