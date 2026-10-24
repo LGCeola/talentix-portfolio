@@ -35,6 +35,12 @@ const routes = [
     component: () => import('../modules/vagas/VacancyFormPage.vue'),
     meta: { requiresAuth: true, role: 'recruiter' },
   },
+  {
+    path: '/vagas/:id(\\d+)/candidaturas',
+    name: 'VacancyApplications',
+    component: () => import('../modules/candidaturas/VacancyApplicationsPage.vue'),
+    meta: { requiresAuth: true, role: 'recruiter' },
+  },
 ]
 
 const router = createRouter({

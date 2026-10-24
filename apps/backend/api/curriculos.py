@@ -15,7 +15,7 @@ candidate_only = require_role(UserType.CANDIDATE)
 
 @router.post("", response_model=CurriculoResponse, status_code=status.HTTP_201_CREATED)
 def upload(file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(candidate_only)) -> Resume:
-  return service.upload(db, current_user, file)
+  return service.upload(db, current_user, file.filename, file.file)
 
 
 @router.get("", response_model=list[CurriculoResponse])

@@ -49,10 +49,7 @@
       <p v-else-if="!loading" class="empty">Nenhum currículo enviado ainda.</p>
     </section>
 
-    <section class="panel" aria-labelledby="vacancies-title">
-      <h2 id="vacancies-title">Compatibilidade com vagas</h2>
-      <p class="empty">As vagas disponíveis e sua compatibilidade com cada uma aparecerão aqui em breve.</p>
-    </section>
+    <CandidateVacancies :resumes="resumes" />
   </div>
 </template>
 
@@ -62,6 +59,7 @@ import UploadIcon from '~icons/lucide/upload'
 import FileTextIcon from '~icons/lucide/file-text'
 import TrashIcon from '~icons/lucide/trash-2'
 import { apiFetch } from '../../services/api.js'
+import CandidateVacancies from '../candidaturas/CandidateVacancies.vue'
 
 const MAX_SIZE_MB = 5
 const ALLOWED_EXTENSIONS = ['pdf', 'txt']

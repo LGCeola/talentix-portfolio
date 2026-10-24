@@ -28,6 +28,8 @@ class Application(Base):
   score_details: Mapped[dict | None] = mapped_column(JSON, nullable=True)
   improvement_suggestions: Mapped[str | None] = mapped_column(Text, nullable=True)
   applied_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+  # Momento em que o candidato autorizou o compartilhamento do currículo com o recrutador (LGPD, RFC 6.1).
+  consent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
   candidate: Mapped["User"] = relationship(back_populates="applications", foreign_keys=[candidate_id])
   vacancy: Mapped["Vacancy"] = relationship(back_populates="applications")
