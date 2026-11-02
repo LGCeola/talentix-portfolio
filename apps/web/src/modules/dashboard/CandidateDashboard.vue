@@ -1,15 +1,7 @@
 <template>
   <div class="candidate-grid">
     <section class="panel" aria-labelledby="resume-title">
-      <h2 id="resume-title">Meu currículo</h2>
-
-      <div class="score-ring" aria-label="Nota do currículo">
-        <strong>—</strong>
-        <span>/ 100</span>
-      </div>
-      <p class="score-caption">
-        {{ resumes.length ? 'Análise pendente — a nota aparecerá aqui assim que o algoritmo for executado.' : 'Envie seu currículo para receber uma nota.' }}
-      </p>
+      <h2 id="resume-title">Meus currículos</h2>
 
       <label
         class="dropzone"
@@ -34,7 +26,6 @@
             <strong>{{ resume.original_filename }}</strong>
             <span>Enviado em {{ formatDate(resume.updated_at) }}</span>
           </div>
-          <span class="badge">Análise pendente</span>
           <button
             type="button"
             class="icon-button"
@@ -158,37 +149,6 @@ h2 {
   font-size: 1.15rem;
 }
 
-.score-ring {
-  width: 132px;
-  height: 132px;
-  margin: 0 auto;
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  padding-top: 44px;
-  gap: 4px;
-  border: 8px solid #e2e8f0;
-  border-radius: 50%;
-}
-
-.score-ring strong {
-  font-size: 1.8rem;
-  color: #94a3b8;
-}
-
-.score-ring span {
-  color: #94a3b8;
-}
-
-.score-caption {
-  margin: 12px auto 24px;
-  max-width: 320px;
-  text-align: center;
-  color: #64748b;
-  font-size: .88rem;
-  line-height: 1.45;
-}
-
 .dropzone {
   position: relative;
   display: grid;
@@ -283,16 +243,6 @@ h2 {
   font-size: .8rem;
 }
 
-.badge {
-  flex-shrink: 0;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: #fef9c3;
-  color: #854d0e;
-  font-size: .75rem;
-  font-weight: 600;
-}
-
 .icon-button {
   flex-shrink: 0;
   display: grid;
@@ -320,11 +270,5 @@ h2 {
   margin: 16px 0 0;
   color: #64748b;
   font-size: .9rem;
-}
-
-@media (max-width: 480px) {
-  .badge {
-    display: none;
-  }
 }
 </style>

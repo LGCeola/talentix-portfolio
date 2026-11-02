@@ -47,8 +47,9 @@ class VagaService:
         created_at=vacancy.created_at,
         criteria_count=len(vacancy.criteria),
         applications_count=applications_count,
+        average_score=average_score,
       )
-      for vacancy, applications_count in self.repository.list_by_recruiter_with_counts(db, recruiter.id)
+      for vacancy, applications_count, average_score in self.repository.list_by_recruiter_with_stats(db, recruiter.id)
     ]
 
   def get_mine(self, db: Session, recruiter: User, vacancy_id: int) -> Vacancy:
