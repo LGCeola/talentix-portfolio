@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING
 from datetime import datetime
 from enum import Enum
-from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, Integer, JSON, Numeric, Text, UniqueConstraint, func
+from sqlalchemy import DateTime, Enum as SQLEnum, ForeignKey, Integer, Numeric, Text, UniqueConstraint, func
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from apps.backend.database.connection import Base
 
@@ -25,10 +26,9 @@ class Application(Base):
   resume_id: Mapped[int] = mapped_column(Integer, ForeignKey("curriculos.id"), nullable=False)
   status: Mapped[ApplicationStatus] = mapped_column(SQLEnum(ApplicationStatus, name="status_candidatura", values_callable=lambda enum: [member.value for member in enum]), default=ApplicationStatus.PENDING, nullable=False)
   overall_score: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
-  score_details: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+  score_details: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
   improvement_suggestions: Mapped[str | None] = mapped_column(Text, nullable=True)
   applied_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-  # Momento em que o candidato autorizou o compartilhamento do currículo com o recrutador (LGPD, RFC 6.1).
   consent_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
   candidate: Mapped["User"] = relationship(back_populates="applications", foreign_keys=[candidate_id])
