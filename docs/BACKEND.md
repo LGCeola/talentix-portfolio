@@ -62,7 +62,7 @@ Os arquivos são gravados em `UPLOAD_DIR` (padrão `apps/backend/uploads/`, fora
 | `PUT` | `/api/vagas/{id}` | Substitui conteúdo e critérios. Bloqueado para vagas encerradas ou que já têm candidaturas. |
 | `PATCH` | `/api/vagas/{id}/status` | Publica (`open`) ou encerra (`closed`) a vaga. |
 | `DELETE` | `/api/vagas/{id}` | Exclui a vaga — apenas rascunhos. |
-| `GET` | `/api/vagas/{id}/candidaturas` | Lista quem se candidatou à vaga (nome, e-mail, currículo e data do consentimento). |
+| `GET` | `/api/vagas/{id}/candidaturas` | Ranking de candidatos da vaga, da maior para a menor nota, com o detalhe de cada critério. |
 
 ### Candidato
 
@@ -70,6 +70,7 @@ Os arquivos são gravados em `UPLOAD_DIR` (padrão `apps/backend/uploads/`, fora
 | --- | --- | --- |
 | `GET` | `/api/vagas` | Lista as vagas publicadas, com critérios e pesos visíveis e o campo `already_applied`. |
 | `GET` | `/api/vagas/{id}` | Detalhe de uma vaga publicada. Rascunhos e vagas encerradas respondem `404`. |
+| `GET` | `/api/vagas/{id}/compatibilidade?resume_id=` | Simula a nota de um currículo próprio na vaga. Nada é gravado nem compartilhado (RF08). |
 
 ### Regras dos critérios
 
@@ -90,7 +91,16 @@ Regras:
 
 - `consent: true` é obrigatório: o currículo só é compartilhado com o recrutador mediante autorização explícita (LGPD, RFC 6.1). O momento do aceite é gravado em `consent_at`.
 - A vaga precisa estar publicada; vagas encerradas respondem `409`. Um candidato só pode se candidatar uma vez por vaga (`409`).
-- `overall_score` fica `null` até o algoritmo de avaliação (M5) ser executado.
+- A análise roda ao criar a candidatura e grava `overall_score`, `score_details` e `improvement_suggestions`. Só candidaturas anteriores a essa análise têm `overall_score` nulo.
+
+## Análise de currículos
+
+Código em `algorithm/`, sem dependência de HTTP ou banco. Testes: `python -m pytest apps/backend/tests`, a partir da raiz.
+
+- **Nota:** soma dos pesos dos critérios presentes (0–100). Critérios ausentes ou a revisar não pontuam.
+- **Busca (`keyword_matcher.py`):** procura o nome do critério no texto, ignorando caixa e acentos, e guarda o trecho como evidência. É sempre determinística.
+- **Modelo externo (`analyzer.py`):** a interface `SemanticDetector` permite consultar um modelo só quando a busca não encontra o termo, classificando a probabilidade em presente (≥ 0,7), ausente (≤ 0,3) ou a revisar. Nenhum modelo está conectado hoje. Falta tratar falhas da API ao conectar um.
+- **Limitações:** só reconhece o termo exato, sem sinônimos (`APIs REST` não casa com `serviços web`), e não entende negação (`não tenho experiência com Python` conta como presente). Por isso o resultado apoia a triagem, e a decisão é do recrutador (RN08).
 
 ## Erros
 

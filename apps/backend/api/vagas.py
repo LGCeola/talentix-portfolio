@@ -6,7 +6,7 @@ from apps.backend.database.connection import get_db
 from apps.backend.models.candidatura import Application
 from apps.backend.models.usuario import User, UserType
 from apps.backend.models.vaga import Vacancy
-from apps.backend.schemas.CandidaturaResponse import CandidaturaRecebidaResponse
+from apps.backend.schemas.CandidaturaResponse import CandidaturaRecebidaResponse, CompatibilidadeResponse
 from apps.backend.schemas.VagaRequest import VagaRequest, VagaStatusRequest
 from apps.backend.schemas.VagaResponse import VagaPublicaResponse, VagaResponse, VagaResumoResponse
 from apps.backend.services.CandidaturaService import CandidaturaService
@@ -42,6 +42,11 @@ def get_one(vacancy_id: int, db: Session = Depends(get_db), current_user: User =
 @router.get("/{vacancy_id}/candidaturas", response_model=list[CandidaturaRecebidaResponse])
 def list_applications(vacancy_id: int, db: Session = Depends(get_db), current_user: User = Depends(recruiter_only)) -> list[Application]:
   return candidaturas.list_received(db, current_user, vacancy_id)
+
+
+@router.get("/{vacancy_id}/compatibilidade", response_model=CompatibilidadeResponse)
+def compatibility(vacancy_id: int, resume_id: int, db: Session = Depends(get_db), current_user: User = Depends(candidate_only)) -> CompatibilidadeResponse:
+  return candidaturas.compatibility(db, current_user, vacancy_id, resume_id)
 
 
 @router.put("/{vacancy_id}", response_model=VagaResponse)

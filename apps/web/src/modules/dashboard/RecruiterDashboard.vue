@@ -7,8 +7,7 @@
       </article>
       <article class="panel stat">
         <h2>Média de pontuações</h2>
-        <strong>—</strong>
-        <span>Disponível após a análise dos currículos</span>
+        <strong>{{ loading ? '—' : averageScore }}</strong>
       </article>
       <article class="panel stat">
         <h2>Vagas ativas</h2>
@@ -74,6 +73,12 @@ const busyId = ref(null)
 const error = ref('')
 
 const openCount = computed(() => vacancies.value.filter((vacancy) => vacancy.status === 'open').length)
+const averageScore = computed(() => {
+  const scored = vacancies.value.filter((vacancy) => vacancy.average_score !== null)
+  const count = scored.reduce((sum, vacancy) => sum + vacancy.scored_applications_count, 0)
+  if (!count) return '—'
+  return Math.round(scored.reduce((sum, vacancy) => sum + vacancy.average_score * vacancy.scored_applications_count, 0) / count)
+})
 const totalApplications = computed(() => vacancies.value.reduce((sum, vacancy) => sum + vacancy.applications_count, 0))
 
 onMounted(loadVacancies)

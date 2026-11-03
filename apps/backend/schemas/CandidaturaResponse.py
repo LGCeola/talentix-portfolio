@@ -1,8 +1,10 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel
 
 from apps.backend.models.candidatura import ApplicationStatus
+from apps.backend.models.criterio import CriterionType
 from apps.backend.models.vaga import VacancyStatus
 
 
@@ -29,11 +31,37 @@ class CandidatoResponse(BaseModel):
   model_config = {"from_attributes": True}
 
 
+class CriterioAnaliseResponse(BaseModel):
+  name: str
+  criterion_type: CriterionType
+  weight: int
+  status: Literal["present", "absent", "review"]
+  points: int
+  source: str
+  evidence: str | None = None
+  probability: float | None = None
+  model_version: str | None = None
+
+
+class AnaliseDetalhesResponse(BaseModel):
+  algorithm_version: str
+  criteria: list[CriterioAnaliseResponse]
+
+
+class CompatibilidadeResponse(BaseModel):
+  """Simulação do candidato antes de se candidatar; nada é gravado nem compartilhado."""
+  score: float
+  criteria: list[CriterioAnaliseResponse]
+  suggestions: list[str]
+
+
 class _CandidaturaBase(BaseModel):
   id: int
   status: ApplicationStatus
-  # Preenchida pelo algoritmo de avaliação (M5); null enquanto a análise estiver pendente.
+  # Null apenas em candidaturas anteriores à análise automática.
   overall_score: float | None
+  score_details: AnaliseDetalhesResponse | None
+  improvement_suggestions: str | None
   applied_at: datetime
   resume: CurriculoResumidoResponse
 

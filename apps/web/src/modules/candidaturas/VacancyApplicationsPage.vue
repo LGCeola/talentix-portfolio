@@ -20,32 +20,51 @@
       <section v-if="vacancy" class="panel" aria-labelledby="candidates-title">
         <h2 id="candidates-title">Candidatos ({{ applications.length }})</h2>
         <p class="hint">
-          O ranking por compatibilidade será gerado após a análise automática dos currículos.
-          A decisão final é sempre do recrutador.
+          Ordenados pela compatibilidade com os critérios da vaga. O ranking apoia a triagem:
+          a decisão final é sempre do recrutador.
         </p>
 
         <div v-if="applications.length" class="table-wrapper">
           <table>
             <thead>
               <tr>
+                <th scope="col">#</th>
                 <th scope="col">Candidato</th>
                 <th scope="col">Currículo</th>
                 <th scope="col">Candidatura</th>
                 <th scope="col">Pontuação</th>
                 <th scope="col">Status</th>
+                <th scope="col"><span class="visually-hidden">Detalhes</span></th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="application in applications" :key="application.id">
-                <td>
-                  <strong>{{ application.candidate.name }}</strong>
-                  <span>{{ application.candidate.email }}</span>
-                </td>
-                <td>{{ application.resume.original_filename }}</td>
-                <td>{{ formatDate(application.applied_at) }}</td>
-                <td class="muted">{{ formatScore(application.overall_score) }}</td>
-                <td><span class="application-status" :class="application.status">{{ APPLICATION_STATUS_LABELS[application.status] }}</span></td>
-              </tr>
+              <template v-for="(application, index) in applications" :key="application.id">
+                <tr>
+                  <td class="muted">{{ rankOf(index) }}</td>
+                  <td>
+                    <strong>{{ application.candidate.name }}</strong>
+                    <span>{{ application.candidate.email }}</span>
+                  </td>
+                  <td>{{ application.resume.original_filename }}</td>
+                  <td>{{ formatDate(application.applied_at) }}</td>
+                  <td class="muted">{{ formatScore(application.overall_score) }}</td>
+                  <td><span class="application-status" :class="application.status">{{ APPLICATION_STATUS_LABELS[application.status] }}</span></td>
+                  <td>
+                    <button
+                      v-if="application.score_details"
+                      type="button"
+                      class="details-button"
+                      :aria-expanded="expandedId === application.id"
+                      @click="expandedId = expandedId === application.id ? null : application.id"
+                    >{{ expandedId === application.id ? 'Ocultar' : 'Detalhes' }}</button>
+                  </td>
+                </tr>
+                <tr v-if="expandedId === application.id">
+                  <td colspan="7">
+                    <CriteriaBreakdown :criteria="application.score_details.criteria" />
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -63,6 +82,7 @@ import { useRoute } from 'vue-router'
 import AppLayout from '../../components/AppLayout.vue'
 import { apiFetch } from '../../services/api.js'
 import { CRITERION_TYPE_LABELS, STATUS_LABELS } from '../vagas/vacancy.js'
+import CriteriaBreakdown from './CriteriaBreakdown.vue'
 import { APPLICATION_STATUS_LABELS, formatScore } from './application.js'
 
 const route = useRoute()
@@ -70,6 +90,14 @@ const vacancy = ref(null)
 const applications = ref([])
 const loading = ref(true)
 const error = ref('')
+const expandedId = ref(null)
+
+// Notas iguais dividem a mesma posição, para o ranking não sugerir uma diferença que não existe.
+function rankOf(index) {
+  const score = applications.value[index].overall_score
+  if (score === null) return '—'
+  return applications.value.findIndex((application) => application.overall_score === score) + 1
+}
 
 onMounted(async () => {
   try {
@@ -185,6 +213,23 @@ td span:not(.application-status) {
 td span:not(.application-status) {
   color: #64748b;
   font-size: .8rem;
+}
+
+.details-button {
+  border: 0;
+  background: none;
+  color: #2563eb;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .muted {

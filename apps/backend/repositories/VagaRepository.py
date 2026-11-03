@@ -6,15 +6,18 @@ from apps.backend.models.vaga import Vacancy, VacancyStatus
 
 
 class VagaRepository:
-  def list_by_recruiter_with_counts(self, db: Session, recruiter_id: int) -> list[tuple[Vacancy, int]]:
+  def list_by_recruiter_with_stats(self, db: Session, recruiter_id: int) -> list[tuple[Vacancy, int, int, float | None]]:
     applications_count = select(func.count(Application.id)).where(Application.vacancy_id == Vacancy.id).correlate(Vacancy).scalar_subquery()
+    # count(coluna) ignora nulos: conta só as candidaturas que já têm nota.
+    scored_count = select(func.count(Application.overall_score)).where(Application.vacancy_id == Vacancy.id).correlate(Vacancy).scalar_subquery()
+    average_score = select(func.avg(Application.overall_score)).where(Application.vacancy_id == Vacancy.id).correlate(Vacancy).scalar_subquery()
     query = (
-      select(Vacancy, applications_count)
+      select(Vacancy, applications_count, scored_count, average_score)
       .where(Vacancy.recruiter_id == recruiter_id)
       .options(selectinload(Vacancy.criteria))
       .order_by(Vacancy.created_at.desc(), Vacancy.id.desc())
     )
-    return [(vacancy, count) for vacancy, count in db.execute(query)]
+    return [(vacancy, count, scored, float(average) if average is not None else None) for vacancy, count, scored, average in db.execute(query)]
 
   def get_by_id_and_recruiter(self, db: Session, vacancy_id: int, recruiter_id: int) -> Vacancy | None:
     query = select(Vacancy).where(Vacancy.id == vacancy_id, Vacancy.recruiter_id == recruiter_id).options(selectinload(Vacancy.criteria))

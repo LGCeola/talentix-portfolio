@@ -27,6 +27,13 @@
               <option v-for="resume in resumes" :key="resume.id" :value="resume.id">{{ resume.original_filename }}</option>
             </select>
 
+            <div v-if="compatibility" class="compatibility" aria-live="polite">
+              <p class="compatibility-score">Compatibilidade estimada: <strong>{{ formatScore(compatibility.score) }}</strong></p>
+              <CriteriaBreakdown :criteria="compatibility.criteria" :suggestions="compatibility.suggestions" />
+              <p class="hint">Esta simulação é só sua: nada é enviado ao recrutador antes de você confirmar.</p>
+            </div>
+            <p v-else-if="compatibilityError" class="hint">{{ compatibilityError }}</p>
+
             <label class="consent">
               <input v-model="consent" type="checkbox" />
               <span>Autorizo o compartilhamento do meu currículo e dos meus dados de contato com o recrutador desta vaga.</span>
@@ -67,6 +74,19 @@
             :disabled="withdrawingId === application.id"
             @click="withdraw(application)"
           >Desistir</button>
+          <button
+            v-if="application.score_details"
+            type="button"
+            class="details-button"
+            :aria-expanded="expandedId === application.id"
+            @click="expandedId = expandedId === application.id ? null : application.id"
+          >{{ expandedId === application.id ? 'Ocultar detalhes' : 'Ver detalhes' }}</button>
+          <CriteriaBreakdown
+            v-if="expandedId === application.id"
+            class="application-details"
+            :criteria="application.score_details.criteria"
+            :suggestions="splitSuggestions(application.improvement_suggestions)"
+          />
         </li>
       </ul>
       <p v-else-if="!loading" class="empty">Você ainda não se candidatou a nenhuma vaga.</p>
@@ -75,10 +95,11 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { apiFetch } from '../../services/api.js'
 import { CRITERION_TYPE_LABELS } from '../vagas/vacancy.js'
-import { APPLICATION_STATUS_LABELS, formatScore } from './application.js'
+import CriteriaBreakdown from './CriteriaBreakdown.vue'
+import { APPLICATION_STATUS_LABELS, formatScore, splitSuggestions } from './application.js'
 
 const props = defineProps({
   resumes: { type: Array, required: true },
@@ -94,8 +115,25 @@ const selectedResumeId = ref(null)
 const consent = ref(false)
 const submitting = ref(false)
 const withdrawingId = ref(null)
+const expandedId = ref(null)
+const compatibility = ref(null)
+const compatibilityError = ref('')
 
 onMounted(load)
+
+watch([applyingId, selectedResumeId], async ([vacancyId, resumeId]) => {
+  compatibility.value = null
+  compatibilityError.value = ''
+  if (!vacancyId || !resumeId) return
+  // Ignora a resposta se a pessoa já trocou de vaga ou de currículo.
+  const isCurrentSelection = () => applyingId.value === vacancyId && selectedResumeId.value === resumeId
+  try {
+    const result = await apiFetch(`/api/vagas/${vacancyId}/compatibilidade?resume_id=${resumeId}`)
+    if (isCurrentSelection()) compatibility.value = result
+  } catch (requestError) {
+    if (isCurrentSelection()) compatibilityError.value = requestError.message
+  }
+})
 
 async function load() {
   loading.value = true
@@ -339,6 +377,39 @@ h2 {
   padding: 12px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
+}
+
+.compatibility {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.compatibility-score {
+  margin: 0;
+  font-size: .9rem;
+}
+
+.compatibility .hint {
+  margin: 0;
+}
+
+.details-button {
+  border: 0;
+  background: none;
+  color: #2563eb;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.application-details {
+  flex-basis: 100%;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
 }
 
 .application-info {

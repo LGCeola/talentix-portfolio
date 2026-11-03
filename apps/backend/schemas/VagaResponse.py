@@ -43,3 +43,5 @@ class VagaResumoResponse(BaseModel):
   created_at: datetime
   criteria_count: int
   applications_count: int
+  scored_applications_count: int
+  average_score: float | None

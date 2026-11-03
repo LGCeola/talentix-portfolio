@@ -21,7 +21,7 @@ class CandidaturaRepository:
       select(Application)
       .where(Application.vacancy_id == vacancy_id)
       .options(joinedload(Application.candidate), joinedload(Application.resume))
-      .order_by(Application.applied_at.asc(), Application.id.asc())
+      .order_by(Application.overall_score.desc().nulls_last(), Application.applied_at.asc(), Application.id.asc())
     )
     return list(db.scalars(query))
 

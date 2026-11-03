@@ -190,9 +190,9 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 - **RF01:** O sistema deve permitir o cadastro de candidatos.
 - **RF02:** O sistema deve permitir autenticação (login/logout) de usuários.
 - **RF03:** O sistema deve permitir que o candidato envie seu currículo em formato digital (PDF ou texto).
-- **RF04:** O sistema deve analisar automaticamente o currículo enviado.
+- **RF04:** O sistema deve analisar automaticamente o currículo em relação aos critérios de cada vaga.
 - **RF05:** O sistema deve gerar uma pontuação baseada em critérios definidos (habilidades, experiência, formação).
-- **RF06:** O sistema deve apresentar ao candidato um relatório com: Pontuação geral, Critérios avaliados, Sugestões de melhoria.
+- **RF06:** O sistema deve apresentar ao candidato um relatório por vaga com: Pontuação de compatibilidade, Critérios avaliados, Sugestões de melhoria.
 - **RF07:** O sistema deve permitir que o candidato visualize vagas disponíveis.
 - **RF08:** O sistema deve permitir comparar o currículo do candidato com os requisitos de uma vaga.
 
@@ -273,6 +273,8 @@ Já o fluxo alternativo é responsável por apresentar o caminho esperado durant
 ![Login e Cadastro](./imgs/Wireframe_tela_login.jpg)
 
 - Dashboard - Candidatos (Visão geral de pontuações e compatibilidade com vagas).
+
+> *Nota: a "nota do currículo" geral deste wireframe foi retirada do escopo. A pontuação existe apenas em relação aos critérios de uma vaga.*
 
 ![Dashboard Candidatos](./imgs/Wireframe_dashboard_candidato.jpg)
 
