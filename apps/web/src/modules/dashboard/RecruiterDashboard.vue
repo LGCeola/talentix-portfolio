@@ -75,9 +75,9 @@ const error = ref('')
 const openCount = computed(() => vacancies.value.filter((vacancy) => vacancy.status === 'open').length)
 const averageScore = computed(() => {
   const scored = vacancies.value.filter((vacancy) => vacancy.average_score !== null)
-  const count = scored.reduce((sum, vacancy) => sum + vacancy.applications_count, 0)
+  const count = scored.reduce((sum, vacancy) => sum + vacancy.scored_applications_count, 0)
   if (!count) return '—'
-  return Math.round(scored.reduce((sum, vacancy) => sum + vacancy.average_score * vacancy.applications_count, 0) / count)
+  return Math.round(scored.reduce((sum, vacancy) => sum + vacancy.average_score * vacancy.scored_applications_count, 0) / count)
 })
 const totalApplications = computed(() => vacancies.value.reduce((sum, vacancy) => sum + vacancy.applications_count, 0))
 

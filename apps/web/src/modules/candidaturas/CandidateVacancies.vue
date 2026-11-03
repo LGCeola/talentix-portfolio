@@ -125,12 +125,13 @@ watch([applyingId, selectedResumeId], async ([vacancyId, resumeId]) => {
   compatibility.value = null
   compatibilityError.value = ''
   if (!vacancyId || !resumeId) return
+  // Ignora a resposta se a pessoa já trocou de vaga ou de currículo.
+  const isCurrentSelection = () => applyingId.value === vacancyId && selectedResumeId.value === resumeId
   try {
     const result = await apiFetch(`/api/vagas/${vacancyId}/compatibilidade?resume_id=${resumeId}`)
-    // Ignora a resposta se a pessoa já trocou de vaga ou de currículo.
-    if (applyingId.value === vacancyId && selectedResumeId.value === resumeId) compatibility.value = result
+    if (isCurrentSelection()) compatibility.value = result
   } catch (requestError) {
-    compatibilityError.value = requestError.message
+    if (isCurrentSelection()) compatibilityError.value = requestError.message
   }
 })
 
