@@ -48,6 +48,11 @@ class EmailJaCadastrado(Conflito):
   default_message = "Já existe um usuário cadastrado com este e-mail"
 
 
+class SenhaIncorreta(AcessoNegado):
+  """A sessão é válida, mas a senha de confirmação não: por isso 403, e não 401, que encerraria a sessão no frontend."""
+  default_message = "Senha incorreta"
+
+
 # ─── Currículos ───
 
 class CurriculoNaoEncontrado(NaoEncontrado):

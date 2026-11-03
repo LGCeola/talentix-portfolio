@@ -11,6 +11,10 @@ export function getCurrentUser() {
   }
 }
 
+export function saveCurrentUser(user) {
+  localStorage.setItem(USER_KEY, JSON.stringify(user))
+}
+
 export function clearSession() {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)

@@ -24,6 +24,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/conta',
+    name: 'Account',
+    component: () => import('../modules/conta/AccountPage.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/vagas/nova',
     name: 'VacancyCreate',
     component: () => import('../modules/vagas/VacancyFormPage.vue'),

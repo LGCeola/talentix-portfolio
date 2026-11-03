@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from apps.backend.core.exceptions import CandidaturaDuplicada
 from apps.backend.models.candidatura import Application
+from apps.backend.models.vaga import Vacancy
 
 
 class CandidaturaRepository:
@@ -30,6 +31,15 @@ class CandidaturaRepository:
 
   def get_by_id_and_candidate(self, db: Session, application_id: int, candidate_id: int) -> Application | None:
     return db.scalar(select(Application).where(Application.id == application_id, Application.candidate_id == candidate_id))
+
+  def get_by_id_and_recruiter(self, db: Session, application_id: int, recruiter_id: int) -> Application | None:
+    query = select(Application).join(Application.vacancy).where(Application.id == application_id, Vacancy.recruiter_id == recruiter_id)
+    return db.scalar(query)
+
+  def save(self, db: Session, application: Application) -> Application:
+    db.commit()
+    db.refresh(application)
+    return application
 
   def create(self, db: Session, application: Application) -> Application:
     db.add(application)

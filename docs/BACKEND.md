@@ -28,6 +28,20 @@ Envie o token retornado pelo login no header `Authorization: Bearer <token>` par
 | `POST` | `/api/auth/login` | Autentica e devolve um access token JWT. |
 | `GET` | `/api/auth/me` | Obtém o usuário autenticado. |
 
+## Conta do usuário (LGPD, RFC 6.1)
+
+| Método | Rota | Finalidade |
+| --- | --- | --- |
+| `PATCH` | `/api/usuarios/me` | Atualiza nome e e-mail: `{"name", "email", "current_password"}`. A senha só é exigida ao trocar o e-mail. |
+| `POST` | `/api/usuarios/me/exclusao` | Exclui a conta definitivamente: `{"password"}`. |
+
+A exclusão não pode ser desfeita e remove, numa única transação:
+
+- **Candidato:** currículos (também os arquivos em disco) e candidaturas, inclusive as já avaliadas. O candidato some do ranking das vagas.
+- **Recrutador:** vagas, critérios e as candidaturas recebidas. Os candidatos perdem essas candidaturas, mas mantêm os próprios currículos.
+
+Senha incorreta responde `403`, não `401`, porque a sessão continua válida. Se a remoção dos arquivos falhar, a conta já terá sido excluída e o erro fica no log para limpeza manual.
+
 Exemplo de cadastro:
 
 ```json
@@ -63,6 +77,7 @@ Os arquivos são gravados em `UPLOAD_DIR` (padrão `apps/backend/uploads/`, fora
 | `PATCH` | `/api/vagas/{id}/status` | Publica (`open`) ou encerra (`closed`) a vaga. |
 | `DELETE` | `/api/vagas/{id}` | Exclui a vaga — apenas rascunhos. |
 | `GET` | `/api/vagas/{id}/candidaturas` | Ranking de candidatos da vaga, da maior para a menor nota, com o detalhe de cada critério. |
+| `PATCH` | `/api/candidaturas/{id}/status` | Registra a decisão sobre um candidato: `approved`, `rejected` ou `pending` (desfaz). |
 
 ### Candidato
 
@@ -91,6 +106,7 @@ Regras:
 
 - `consent: true` é obrigatório: o currículo só é compartilhado com o recrutador mediante autorização explícita (LGPD, RFC 6.1). O momento do aceite é gravado em `consent_at`.
 - A vaga precisa estar publicada; vagas encerradas respondem `409`. Um candidato só pode se candidatar uma vez por vaga (`409`).
+- A decisão de aprovar ou rejeitar é sempre do recrutador dono da vaga (RN08), também depois de encerrada a vaga. Ela não altera nota nem ranking, e o sistema nunca a toma sozinho.
 - A análise roda ao criar a candidatura e grava `overall_score`, `score_details` e `improvement_suggestions`. Só candidaturas anteriores a essa análise têm `overall_score` nulo.
 
 ## Análise de currículos

@@ -34,6 +34,7 @@
                 <th scope="col">Candidatura</th>
                 <th scope="col">Pontuação</th>
                 <th scope="col">Status</th>
+                <th scope="col">Decisão</th>
                 <th scope="col"><span class="visually-hidden">Detalhes</span></th>
               </tr>
             </thead>
@@ -50,6 +51,15 @@
                   <td class="muted">{{ formatScore(application.overall_score) }}</td>
                   <td><span class="application-status" :class="application.status">{{ APPLICATION_STATUS_LABELS[application.status] }}</span></td>
                   <td>
+                    <div class="decision-actions">
+                      <template v-if="application.status === 'pending'">
+                        <button type="button" class="decision-button approve" :disabled="decidingId === application.id" :aria-label="`Aprovar ${application.candidate.name}`" @click="decide(application, 'approved')">Aprovar</button>
+                        <button type="button" class="decision-button reject" :disabled="decidingId === application.id" :aria-label="`Rejeitar ${application.candidate.name}`" @click="decide(application, 'rejected')">Rejeitar</button>
+                      </template>
+                      <button v-else type="button" class="decision-button" :disabled="decidingId === application.id" :aria-label="`Desfazer decisão sobre ${application.candidate.name}`" @click="decide(application, 'pending')">Desfazer</button>
+                    </div>
+                  </td>
+                  <td>
                     <button
                       v-if="application.score_details"
                       type="button"
@@ -60,7 +70,7 @@
                   </td>
                 </tr>
                 <tr v-if="expandedId === application.id">
-                  <td colspan="7">
+                  <td colspan="8">
                     <CriteriaBreakdown :criteria="application.score_details.criteria" />
                   </td>
                 </tr>
@@ -91,6 +101,7 @@ const applications = ref([])
 const loading = ref(true)
 const error = ref('')
 const expandedId = ref(null)
+const decidingId = ref(null)
 
 // Notas iguais dividem a mesma posição, para o ranking não sugerir uma diferença que não existe.
 function rankOf(index) {
@@ -113,6 +124,23 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+async function decide(application, status) {
+  error.value = ''
+  decidingId.value = application.id
+  try {
+    const updated = await apiFetch(`/api/candidaturas/${application.id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    application.status = updated.status
+  } catch (requestError) {
+    error.value = `${application.candidate.name}: ${requestError.message}`
+  } finally {
+    decidingId.value = null
+  }
+}
 
 function formatDate(value) {
   return new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -183,7 +211,7 @@ h2 {
 
 table {
   width: 100%;
-  min-width: 640px;
+  min-width: 820px;
   border-collapse: collapse;
   font-size: .9rem;
 }
@@ -213,6 +241,43 @@ td span:not(.application-status) {
 td span:not(.application-status) {
   color: #64748b;
   font-size: .8rem;
+}
+
+.decision-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.decision-button {
+  padding: 5px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
+  color: #172033;
+  font-size: .8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.decision-button:hover:not(:disabled) {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.decision-button.approve:hover:not(:disabled) {
+  border-color: #15803d;
+  color: #15803d;
+}
+
+.decision-button.reject:hover:not(:disabled) {
+  border-color: #b42318;
+  color: #b42318;
+}
+
+.decision-button:disabled {
+  cursor: progress;
+  opacity: .5;
 }
 
 .details-button {
