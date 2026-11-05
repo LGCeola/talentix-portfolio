@@ -11,11 +11,11 @@ _AFTER = r"(?![a-z0-9+#])"
 
 def find_evidence(text: str, term: str) -> str | None:
   """Devolve o trecho do texto original em que o termo aparece, ou None."""
-  words = _normalize(term)[0].split()
+  words = normalize_with_positions(term)[0].split()
   if not words:
     return None
 
-  normalized_text, positions = _normalize(text)
+  normalized_text, positions = normalize_with_positions(text)
   pattern = _BEFORE + r"[\s\-/]+".join(re.escape(word) for word in words) + _AFTER
   match = re.search(pattern, normalized_text)
   if not match:
@@ -23,7 +23,7 @@ def find_evidence(text: str, term: str) -> str | None:
   return _snippet(text, positions[match.start()], positions[match.end() - 1] + 1)
 
 
-def _normalize(text: str) -> tuple[str, list[int]]:
+def normalize_with_positions(text: str) -> tuple[str, list[int]]:
   """Remove acentos e caixa, mantendo a posição original de cada caractere gerado."""
   characters: list[str] = []
   positions: list[int] = []

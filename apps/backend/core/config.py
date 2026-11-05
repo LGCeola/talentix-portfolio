@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings
 
 # Resolve o .env sempre relativo a este arquivo (apps/backend/.env),
@@ -21,6 +22,12 @@ class Settings(BaseSettings):
 
   UPLOAD_DIR: Path = _BACKEND_DIR / "uploads"
   MAX_RESUME_SIZE_MB: int = 5
+
+  # Desligado por padrão: ligar envia currículos anonimizados à TypeSafe, nos EUA, e exige consentimento específico.
+  JEV_ENABLED: bool = False
+  JEV_SECRET_KEY: SecretStr | None = None
+  JEV_MODEL: str = "jev-1.14.0"
+  JEV_TIMEOUT_SECONDS: float = 1.5
 
   class Config:
     env_file = str(_ENV_FILE)

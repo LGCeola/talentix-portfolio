@@ -154,7 +154,7 @@ Desenvolver uma plataforma web para análise e ranqueamento de currículos, base
 A avaliação do sucesso do projeto será realizada com base em métricas relacionadas ao desempenho do sistema, eficiência do processo de análise e qualidade dos resultados apresentados aos usuários:
 - O sistema deve realizar a análise de um currículo em até 2 segundos;
 - Redução de pelo menos 50% no tempo de triagem inicial em relação à análise manual;
-- O algoritmo deve gerar resultados determinísticos e consistentes para os mesmos dados de entrada;
+- O cálculo da nota deve ser determinístico, e a nota gravada na candidatura não deve mudar;
 - Suporte a pelo menos 20 usuários simultâneos sem degradação significativa de desempenho;
 - Pelo menos 80% dos usuários devem ser capazes de compreender a pontuação gerada pelo sistema (com base em questionário);
 - Pelo menos 75% dos usuários devem avaliar o sistema como útil ou muito útil.
@@ -205,7 +205,7 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 - **RF14:** O sistema deve permitir visualizar os detalhes da pontuação de cada candidato.
 
 **Sistema:**
-- **RF15:** O sistema deve utilizar um algoritmo próprio para análise de currículos.
+- **RF15:** O sistema deve utilizar um algoritmo próprio para calcular a nota do currículo em cada vaga, somando os pesos dos critérios presentes. Para verificar se um critério está presente, o algoritmo combina busca por termos e um modelo externo de análise de texto, que não define pesos nem calcula a nota.
 - **RF16:** O sistema deve garantir que a avaliação seja baseada em critérios explícitos e configuráveis.
 - **RF17:** O sistema deve armazenar os dados dos usuários, currículos e vagas.
 
@@ -213,7 +213,7 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 - **Desempenho (RNF01, RNF02):** Processar análise em até 2 segundos e suportar no mínimo 20 usuários simultâneos.
 - **Segurança (RNF03, RNF04):** Garantir autenticação segura e proteger dados conforme boas práticas.
 - **Usabilidade (RNF05, RNF06):** Interface intuitiva e pontuação facilmente compreensível.
-- **Confiabilidade (RNF07):** Resultados consistentes para os mesmos dados de entrada.
+- **Confiabilidade (RNF07):** O cálculo da nota é determinístico, e a nota gravada na candidatura não muda.
 - **Compatibilidade (RNF08):** Acessível via navegadores modernos (Chrome, Edge, Firefox).
 - **Escalabilidade (RNF09):** Permitir expansão futura.
 
@@ -234,7 +234,7 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 - Sistema completo de folha de pagamento ou RH.
 - Análise comportamental avançada baseada em vídeo.
 - Aplicativo mobile nativo.
-- Utilização de inteligência artificial generativa.
+- Utilização de inteligência artificial generativa para gerar conteúdo ou decidir candidaturas; o Jev é usado apenas para classificar a presença de critérios.
 - Suporte multilíngue.
 
 ---
@@ -335,15 +335,18 @@ Já o fluxo alternativo é responsável por apresentar o caminho esperado durant
 ### 5.3. PRINCIPAIS COMPONENTES
 1. **AuthController:** Responsável por garantir acessos seguros via tokens, como o JWT, protegendo as rotas de candidatos e recrutadores conforme as boas práticas (RNF03 e RNF04).
 2. **Parser de Documentos (Ingestion Engine):** Componente isolado encarregado de receber o upload de arquivos primordialmente em formato **PDF ou texto**, para extrair os metadados brutos e normalizar a informação para leitura do algoritmo.
-3. **Core Engine (Algoritmo Proprietário):** O coração do sistema. Ele cruza os dados extraídos do currículo com as regras contidas na tabela "criterios_vaga". Por trabalhar de forma estritamente matemática e condicional (sem caixas-pretas), cumpre o requisito de transparência absoluta.
+3. **Core Engine (Algoritmo Proprietário):** O coração do sistema. Ele cruza os dados extraídos do currículo com as regras contidas na tabela "criterios_vaga". O cálculo da nota é matemático e explícito. A presença de cada critério é verificada pela busca por termos e pelo Detector Semântico, e o sistema registra o status, a origem e a versão do modelo. Divergências entre os dois e probabilidades intermediárias ficam "a revisar" e não somam pontos.
 4. **Gerador de Feedbacks (Explainer Component):** Componente que traduz a pontuação final gerada pela Engine em uma interface amigável para o usuário, mapeando as lacunas.
+5. **Detector Semântico (`integrations/jev.py`):** Envia o texto anonimizado e os critérios da vaga ao Jev e recebe a probabilidade de cada critério estar presente. Se a API falhar, a candidatura continua válida e os critérios sem resposta ficam "a revisar". *Situação atual:* o cliente está implementado, mas desligado por padrão (`JEV_ENABLED=false`). A regra de divergência entre busca e modelo ainda será implementada antes de ligá-lo.
 
 ### 5.4. STACK TECNOLÓGICA
 A escolha das tecnologias foca em alta performance para análise síncrona e assíncrona, e facilita a manipulação de strings para o algoritmo:
 - **Frontend:** Vue.js (Garante uma SPA fluida, atendendo à usabilidade intuitiva do RNF05 e RNF06).
 - **Backend / API:** Python (FastAPI).
 - **Engine do Algoritmo:** Python.
-  - *Justificativa:* Bibliotecas nativas e maduras de processamento de texto e extração de PDF (PyPDF, pdfplumber ou ferramentas de Expressões Regulares) permitem construir um algoritmo determinístico rápido, explícito e altamente auditável, unificando a API e a Engine num ecossistema performático de alto nível.
+  - *Justificativa:* Bibliotecas nativas e maduras de processamento de texto e extração de PDF (PyPDF, pdfplumber ou ferramentas de Expressões Regulares) permitem construir uma busca e um cálculo de nota rápidos, explícitos e auditáveis, unificando a API e a Engine no mesmo ecossistema.
+- **Apoio à análise de texto:** Jev (TypeSafe), versão `jev-1.14.0`, fixada para evitar mudanças sem aviso.
+  - *Justificativa:* Baixo custo e capacidade de reconhecer sinônimos e negações que a busca por termos não identifica. Como as respostas podem variar entre execuções, a nota é gravada no momento da candidatura.
 - **Banco de Dados Principal:** PostgreSQL.
   - *Justificativa:* Banco relacional robusto, ideal para consistência de dados (RNF07), além de possuir excelente suporte nativo ao tipo de dado JSONB para salvar detalhes das pontuações mutáveis de forma performática.
 - **Mecanismo de Cache:** Redis.
@@ -363,9 +366,15 @@ Por conseguinte, devido à necessidade de envio de currículos, o sistema també
 ### 6.1. PRIVACIDADE E LGPD
 A aplicação deverá seguir os princípios estabelecidos pela Lei Geral de Proteção de Dados (LGPD). Os dados coletados pelo sistema serão utilizados exclusivamente para as funcionalidades relacionadas à análise de currículos e gerenciamento de processos seletivos (como nome, e-mail e dados profissionais inseridos no currículo).
 
-Os dados serão armazenados em ambiente seguro e não serão disponibilizados publicamente, sendo compartilhados apenas quando o candidato autorizar a candidatura a uma vaga específica. O usuário terá controle total sobre seus dados, possibilitando a visualização, atualização ou exclusão definitiva (direito ao esquecimento) de seu cadastro, currículo e histórico de análises.
+Os dados serão armazenados em ambiente seguro e não serão disponibilizados publicamente, sendo compartilhados com o recrutador da vaga e com o fornecedor de análise de texto somente após a autorização do candidato na candidatura. O usuário terá controle total sobre seus dados, possibilitando a visualização, atualização ou exclusão definitiva (direito ao esquecimento) de seu cadastro, currículo e histórico de análises.
 
-Importante ressaltar que, como o sistema atua em processos seletivos, o algoritmo zelará pela transparência dos critérios utilizados para a geração das pontuações, evitando decisões completamente automatizadas sem explicação (caixa-preta). O algoritmo servirá unicamente como uma ferramenta de apoio à triagem inicial, garantindo que o poder de decisão e contratação permaneça 100% sob responsabilidade do recrutador humano.
+Importante ressaltar que, como o sistema atua em processos seletivos, o sistema zelará pela transparência dos critérios utilizados para a geração das pontuações, evitando decisões completamente automatizadas sem explicação (caixa-preta). O algoritmo servirá unicamente como uma ferramenta de apoio à triagem inicial, garantindo que o poder de decisão e contratação permaneça 100% sob responsabilidade do recrutador humano.
+
+**Análise por terceiro:** ao se candidatar, e somente com a autorização do candidato, o texto do currículo e os critérios da vaga são enviados à TypeSafe, nos Estados Unidos, para verificar os critérios. A candidatura depende dessa autorização, e o candidato é informado disso em destaque. *Situação atual:* esse envio está desligado na aplicação, e o texto de consentimento da tela será atualizado antes de ligá-lo.
+
+**Dados enviados:** antes do envio, o sistema remove nome, e-mail, telefone, CPF, CEP, links de perfil e datas completas. Essa remoção automática reduz o risco, mas pode não alcançar outros dados pessoais escritos no currículo.
+
+**Exclusão:** a exclusão definitiva vale para os dados mantidos pelo Talentix. O prazo de retenção da TypeSafe é **[a confirmar com o fornecedor]**.
 
 ---
 
