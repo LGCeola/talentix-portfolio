@@ -31,12 +31,19 @@
               <p class="compatibility-score">Compatibilidade estimada: <strong>{{ formatScore(compatibility.score) }}</strong></p>
               <CriteriaBreakdown :criteria="compatibility.criteria" :suggestions="compatibility.suggestions" />
               <p class="hint">Esta simulação é só sua: nada é enviado ao recrutador antes de você confirmar.</p>
+              <p v-if="externalAnalysis" class="hint">Ela usa só a busca por termos, sem o modelo de IA, então a nota final pode ser diferente.</p>
             </div>
             <p v-else-if="compatibilityError" class="hint">{{ compatibilityError }}</p>
 
             <label class="consent">
               <input v-model="consent" type="checkbox" />
-              <span>Autorizo o compartilhamento do meu currículo e dos meus dados de contato com o recrutador desta vaga.</span>
+              <span>
+                Autorizo o compartilhamento do meu currículo e dos meus dados de contato com o recrutador desta vaga.
+                <template v-if="externalAnalysis">
+                  Autorizo também o envio do texto do meu currículo à TypeSafe, nos Estados Unidos, para que um modelo de IA ajude a verificar os critérios da vaga. Antes do envio, removemos automaticamente nome, contatos e documentos, mas outros dados pessoais escritos no currículo podem não ser removidos.
+                  <strong>Essa autorização é necessária para se candidatar.</strong>
+                </template>
+              </span>
             </label>
 
             <div class="apply-actions">
@@ -113,6 +120,7 @@ const error = ref('')
 const applyingId = ref(null)
 const selectedResumeId = ref(null)
 const consent = ref(false)
+const externalAnalysis = ref(false)
 const submitting = ref(false)
 const withdrawingId = ref(null)
 const expandedId = ref(null)
@@ -138,12 +146,14 @@ watch([applyingId, selectedResumeId], async ([vacancyId, resumeId]) => {
 async function load() {
   loading.value = true
   try {
-    const [openVacancies, myApplications] = await Promise.all([
+    const [openVacancies, myApplications, consentTerms] = await Promise.all([
       apiFetch('/api/vagas'),
       apiFetch('/api/candidaturas/minhas'),
+      apiFetch('/api/candidaturas/consentimento'),
     ])
     vacancies.value = openVacancies
     applications.value = myApplications
+    externalAnalysis.value = consentTerms.external_analysis
   } catch (requestError) {
     error.value = requestError.message
   } finally {

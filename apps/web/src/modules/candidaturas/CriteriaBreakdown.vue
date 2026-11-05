@@ -7,6 +7,7 @@
           <span class="criterion-status" :class="criterion.status">{{ CRITERION_STATUS_LABELS[criterion.status] }}</span>
           <span class="points">{{ criterion.points }} de {{ criterion.weight }} pontos</span>
         </div>
+        <p v-if="describeDetection(criterion)" class="detection">{{ describeDetection(criterion) }}</p>
         <p v-if="criterion.evidence" class="evidence">“{{ criterion.evidence }}”</p>
       </li>
     </ul>
@@ -21,7 +22,7 @@
 </template>
 
 <script setup>
-import { CRITERION_STATUS_LABELS } from './application.js'
+import { CRITERION_STATUS_LABELS, describeDetection } from './application.js'
 
 defineProps({
   criteria: { type: Array, required: true },
@@ -77,6 +78,12 @@ defineProps({
 .points {
   margin-left: auto;
   color: #64748b;
+}
+
+.detection {
+  margin: 4px 0 0;
+  color: #475569;
+  font-size: .78rem;
 }
 
 .evidence {

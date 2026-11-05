@@ -33,6 +33,9 @@ class CandidaturaService:
     self.vaga_service = vaga_service or VagaService()
     self.detector = detector if detector is not None else build_semantic_detector()
 
+  def uses_external_analysis(self) -> bool:
+    return self.detector is not None
+
   def apply(self, db: Session, candidate: User, payload: CandidaturaRequest) -> Application:
     vacancy = self.vagas.get_by_id(db, payload.vacancy_id)
     # Rascunhos são invisíveis para candidatos: responde como se a vaga não existisse.

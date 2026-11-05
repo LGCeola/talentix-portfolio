@@ -71,7 +71,12 @@ def predict(decision: dict, strategy: str) -> str:
     return "present" if decision["keyword"] else "absent"
   if strategy == "jev":
     return jev
-  return "present" if decision["keyword"] else jev
+  if strategy == "jev_when_no_keyword":
+    return "present" if decision["keyword"] else jev
+  # "keyword+jev": a regra de conflito usada em analyzer.py.
+  if decision["keyword"]:
+    return "review" if jev == "absent" else "present"
+  return jev
 
 
 def metrics(decisions: list[dict], strategy: str) -> dict:
@@ -126,7 +131,7 @@ def report(run: dict) -> dict:
   return {
     "language": run["language"],
     "model": run["model"],
-    "strategies": {name: metrics(run["decisions"], name) for name in ("keyword", "jev", "keyword+jev")},
+    "strategies": {name: metrics(run["decisions"], name) for name in ("keyword", "jev", "jev_when_no_keyword", "keyword+jev")},
     "consistency": consistency(run["decisions"]),
     "latency_seconds": {
       "p50": statistics.median(latencies),

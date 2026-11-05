@@ -8,6 +8,11 @@ from apps.backend.models.criterio import CriterionType
 from apps.backend.models.vaga import VacancyStatus
 
 
+class ConsentimentoResponse(BaseModel):
+  """Indica se o consentimento precisa informar o envio do currículo a um modelo externo."""
+  external_analysis: bool
+
+
 class VagaResumidaResponse(BaseModel):
   id: int
   title: str
