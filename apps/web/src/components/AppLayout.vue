@@ -7,7 +7,7 @@
       </RouterLink>
 
       <div class="topbar-user">
-        <span>{{ user?.name }}</span>
+        <RouterLink class="account-link" :to="{ name: 'Account' }">{{ userName ?? user?.name }}</RouterLink>
         <button type="button" class="logout-button" @click="logout">Sair</button>
       </div>
     </header>
@@ -21,6 +21,11 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { clearSession, getCurrentUser } from '../services/api.js'
+
+defineProps({
+  // Permite à página de conta mostrar o nome recém-editado.
+  userName: { type: String, default: null },
+})
 
 const router = useRouter()
 const user = getCurrentUser()
@@ -63,6 +68,16 @@ function logout() {
   gap: 12px;
   color: #475569;
   font-weight: 600;
+}
+
+.account-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.account-link:hover {
+  color: #2563eb;
+  text-decoration: underline;
 }
 
 .logout-button {

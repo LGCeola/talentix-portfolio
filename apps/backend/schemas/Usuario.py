@@ -6,6 +6,13 @@ from pydantic import BaseModel, Field, StringConstraints, field_validator
 from apps.backend.models.usuario import UserType
 
 
+def _normalize_email(value: str) -> str:
+  normalized = value.strip().lower()
+  if "@" not in normalized or normalized.startswith("@") or normalized.endswith("@"):
+    raise ValueError("E-mail inválido")
+  return normalized
+
+
 class UserCreate(BaseModel):
   name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=100)]
   email: str = Field(min_length=5, max_length=100)
@@ -15,10 +22,22 @@ class UserCreate(BaseModel):
   @field_validator("email")
   @classmethod
   def normalize_email(cls, value: str) -> str:
-    normalized = value.strip().lower()
-    if "@" not in normalized or normalized.startswith("@") or normalized.endswith("@"):
-      raise ValueError("E-mail inválido")
-    return normalized
+    return _normalize_email(value)
+
+
+class UserUpdate(BaseModel):
+  name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=100)]
+  email: str = Field(min_length=5, max_length=100)
+  current_password: str | None = Field(default=None, max_length=128)
+
+  @field_validator("email")
+  @classmethod
+  def normalize_email(cls, value: str) -> str:
+    return _normalize_email(value)
+
+
+class AccountDeleteRequest(BaseModel):
+  password: str = Field(min_length=1, max_length=128)
 
 
 class UserResponse(BaseModel):

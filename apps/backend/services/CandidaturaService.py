@@ -76,6 +76,14 @@ class CandidaturaService:
     vacancy = self.vaga_service.get_mine(db, recruiter, vacancy_id)
     return self.repository.list_by_vacancy(db, vacancy.id)
 
+  def decide(self, db: Session, recruiter: User, application_id: int, new_status: ApplicationStatus) -> Application:
+    """Registra a decisão do recrutador (RN08). Não altera nota nem ranking, e pode ser desfeita."""
+    application = self.repository.get_by_id_and_recruiter(db, application_id, recruiter.id)
+    if not application:
+      raise CandidaturaNaoEncontrada()
+    application.status = new_status
+    return self.repository.save(db, application)
+
   def _get_resume(self, db: Session, candidate: User, resume_id: int) -> Resume:
     resume = self.curriculos.get_by_id_and_candidate(db, resume_id, candidate.id)
     if not resume:
