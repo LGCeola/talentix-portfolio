@@ -115,7 +115,10 @@ Código em `algorithm/`, sem dependência de HTTP ou banco. Testes: `python -m p
 
 - **Nota:** soma dos pesos dos critérios presentes (0–100). Critérios ausentes ou a revisar não pontuam.
 - **Busca (`keyword_matcher.py`):** procura o nome do critério no texto, ignorando caixa e acentos, e guarda o trecho como evidência. É sempre determinística.
-- **Modelo externo (`analyzer.py`):** a interface `SemanticDetector` permite consultar um modelo só quando a busca não encontra o termo, classificando a probabilidade em presente (≥ 0,7), ausente (≤ 0,3) ou a revisar. Nenhum modelo está conectado hoje. Falta tratar falhas da API ao conectar um.
+- **Modelo externo (`analyzer.py`):** a interface `SemanticDetector` permite consultar um modelo só quando a busca não encontra o termo, classificando a probabilidade em presente (≥ 0,7), ausente (≤ 0,3) ou a revisar. O cliente do Jev está em `integrations/jev.py` e fica **desligado por padrão** (`JEV_ENABLED=false`). Antes de ligar, é preciso atualizar o consentimento da candidatura e o RFC.
+- **Privacidade (`anonymizer.py`):** antes de sair do sistema, o texto perde e-mail, telefone, CPF, CEP, links de perfil, datas completas e o nome do candidato. É uma remoção por padrões: não garante eliminar qualquer dado pessoal escrito de outra forma, como um endereço.
+- **Falha do modelo externo:** a candidatura continua válida, e os critérios sem resposta ficam "a revisar". Não há nova tentativa automática.
+- **Comparação (`evaluation/`):** `python -m apps.backend.evaluation.compare_jev --output resultado.json`, a partir da raiz, compara as estratégias com os currículos fictícios de `resumes.json`. Faz chamadas reais e pagas à API.
 - **Limitações:** só reconhece o termo exato, sem sinônimos (`APIs REST` não casa com `serviços web`), e não entende negação (`não tenho experiência com Python` conta como presente). Por isso o resultado apoia a triagem, e a decisão é do recrutador (RN08).
 
 ## Erros

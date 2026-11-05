@@ -16,9 +16,9 @@ class FakeDetector:
     self.probability = probability
     self.calls: list[str] = []
 
-  def detect(self, resume_text: str, criterion: CriterionInput) -> SemanticAnswer:
-    self.calls.append(criterion.name)
-    return SemanticAnswer(probability=self.probability, model_version="fake-1")
+  def detect(self, resume_text: str, criteria: list[CriterionInput]) -> dict[str, SemanticAnswer]:
+    self.calls.extend(criterion.name for criterion in criteria)
+    return {criterion.name: SemanticAnswer(probability=self.probability, model_version="fake-1") for criterion in criteria}
 
 
 def test_match_ignores_case_and_accents():

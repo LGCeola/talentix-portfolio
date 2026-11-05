@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from apps.backend.algorithm.analyzer import Analysis, SemanticDetector, analyze
 from apps.backend.algorithm.score_calculator import CriterionInput
 from apps.backend.core.exceptions import CandidaturaNaoEncontrada, Conflito, CurriculoNaoEncontrado, VagaNaoEncontrada
+from apps.backend.integrations.jev import build_semantic_detector
 from apps.backend.models.candidatura import Application, ApplicationStatus
 from apps.backend.models.curriculo import Resume
 from apps.backend.models.usuario import User
@@ -30,7 +31,7 @@ class CandidaturaService:
     self.vagas = vagas or VagaRepository()
     self.curriculos = curriculos or CurriculoRepository()
     self.vaga_service = vaga_service or VagaService()
-    self.detector = detector
+    self.detector = detector if detector is not None else build_semantic_detector()
 
   def apply(self, db: Session, candidate: User, payload: CandidaturaRequest) -> Application:
     vacancy = self.vagas.get_by_id(db, payload.vacancy_id)
@@ -41,7 +42,7 @@ class CandidaturaService:
       raise Conflito("Esta vaga não está mais recebendo candidaturas")
 
     resume = self._get_resume(db, candidate, payload.resume_id)
-    analysis = self._analyze(vacancy, resume, self.detector)
+    analysis = self._analyze(vacancy, resume, self.detector, (candidate.name,))
 
     application = Application(
       candidate_id=candidate.id,
@@ -90,9 +91,9 @@ class CandidaturaService:
       raise CurriculoNaoEncontrado()
     return resume
 
-  def _analyze(self, vacancy: Vacancy, resume: Resume, detector: SemanticDetector | None) -> Analysis:
+  def _analyze(self, vacancy: Vacancy, resume: Resume, detector: SemanticDetector | None, private_terms: tuple[str, ...] = ()) -> Analysis:
     criteria = [
       CriterionInput(name=criterion.name, criterion_type=criterion.criterion_type.value, weight=criterion.weight)
       for criterion in sorted(vacancy.criteria, key=lambda item: item.id)
     ]
-    return analyze(resume.extracted_text, criteria, detector)
+    return analyze(resume.extracted_text, criteria, detector, private_terms)
