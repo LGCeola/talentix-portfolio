@@ -68,10 +68,40 @@ def test_suggestions_cover_only_missing_criteria_by_weight():
   assert analyze("Python, APIs REST e Graduação em TI", CRITERIA).suggestions == []
 
 
-def test_detector_is_only_called_without_keyword_match():
+def test_detector_evaluates_all_criteria():
   detector = FakeDetector(0.9)
   analyze("Dev Python", CRITERIA, detector)
-  assert detector.calls == ["APIs REST", "Graduação em TI"]
+  assert detector.calls == ["Python", "APIs REST", "Graduação em TI"]
+
+
+def test_keyword_contradicted_by_detector_goes_to_review():
+  criterion = [CriterionInput("Python", "habilidade", 100)]
+  analysis = analyze("Não tenho experiência com Python", criterion, FakeDetector(0.05))
+  result = analysis.results[0]
+  assert result.status == CriterionStatus.REVIEW
+  assert result.source == "fake"
+  assert result.probability == 0.05
+  assert "Python" in result.evidence
+  assert analysis.score == 0
+
+
+def test_keyword_stays_present_unless_detector_says_absent():
+  criterion = [CriterionInput("Python", "habilidade", 100)]
+  for probability in (0.9, 0.7, 0.5, 0.31):
+    analysis = analyze("Dev Python", criterion, FakeDetector(probability))
+    result = analysis.results[0]
+    assert result.status == CriterionStatus.PRESENT
+    assert result.source == "keyword"
+    assert result.probability == probability
+    assert analysis.score == 100
+  assert analyze("Dev Python", criterion, FakeDetector(0.3)).results[0].status == CriterionStatus.REVIEW
+
+
+def test_criterion_without_keyword_follows_detector_with_no_evidence():
+  result = analyze("Dev Django", [CriterionInput("Python", "habilidade", 100)], FakeDetector(0.9)).results[0]
+  assert result.status == CriterionStatus.PRESENT
+  assert result.source == "fake"
+  assert result.evidence is None
 
 
 def test_detector_thresholds():
@@ -93,7 +123,7 @@ def test_review_scores_zero_and_generates_suggestion():
 
 def test_details_are_json_ready():
   details = analyze("Dev Python", CRITERIA).to_details()
-  assert details["algorithm_version"] == "1"
+  assert details["algorithm_version"] == "2"
   assert details["criteria"][0]["status"] == "present"
   assert details["criteria"][0]["points"] == 50
   assert "Python" in details["criteria"][0]["evidence"]

@@ -11,7 +11,7 @@ from apps.backend.algorithm.score_calculator import CriterionInput, CriterionRes
 
 logger = logging.getLogger(__name__)
 
-ALGORITHM_VERSION = "1"
+ALGORITHM_VERSION = "2"
 PRESENT_THRESHOLD = 0.7
 ABSENT_THRESHOLD = 0.3
 
@@ -27,7 +27,7 @@ class SemanticDetectorError(Exception):
 
 
 class SemanticDetector(Protocol):
-  """Ponto de conexão de um modelo externo (ex.: Jev), consultado só quando a busca não encontra o termo."""
+  """Ponto de conexão de um modelo externo (ex.: Jev), que avalia todos os critérios junto com a busca."""
   source: str
 
   def detect(self, resume_text: str, criteria: list[CriterionInput]) -> dict[str, SemanticAnswer]:
@@ -67,51 +67,55 @@ def analyze(
   private_terms: tuple[str, ...] = (),
 ) -> Analysis:
   evidences = {criterion.name: find_evidence(resume_text, criterion.name) for criterion in criteria}
-  unmatched = [criterion for criterion in criteria if not evidences[criterion.name]]
-  answers, detector_failed = _ask_detector(resume_text, unmatched, detector, private_terms)
+  answers = _ask_detector(resume_text, criteria, detector, private_terms)
 
-  results = [_evaluate(criterion, evidences[criterion.name], answers, detector, detector_failed) for criterion in criteria]
+  results = [_evaluate(criterion, evidences[criterion.name], answers.get(criterion.name), detector) for criterion in criteria]
   return Analysis(score=calculate_score(results), results=results, suggestions=build_suggestions(results))
 
 
 def _ask_detector(
   resume_text: str,
-  unmatched: list[CriterionInput],
+  criteria: list[CriterionInput],
   detector: SemanticDetector | None,
   private_terms: tuple[str, ...],
-) -> tuple[dict[str, SemanticAnswer], bool]:
-  if detector is None or not unmatched:
-    return {}, False
+) -> dict[str, SemanticAnswer]:
+  if detector is None or not criteria:
+    return {}
   try:
     # Único ponto em que o currículo sai do sistema: sempre sem os dados pessoais.
-    return detector.detect(redact(resume_text, private_terms), unmatched), False
+    return detector.detect(redact(resume_text, private_terms), criteria)
   except SemanticDetectorError as error:
     logger.warning("Análise sem detector externo: %s", error)
-    return {}, True
+    return {}
 
 
 def _evaluate(
   criterion: CriterionInput,
   evidence: str | None,
-  answers: dict[str, SemanticAnswer],
+  answer: SemanticAnswer | None,
   detector: SemanticDetector | None,
-  detector_failed: bool,
 ) -> CriterionResult:
   base = {"name": criterion.name, "criterion_type": criterion.criterion_type, "weight": criterion.weight}
 
-  if evidence:
-    return CriterionResult(**base, status=CriterionStatus.PRESENT, source="keyword", evidence=evidence)
-  if detector is None:
-    return CriterionResult(**base, status=CriterionStatus.ABSENT, source="keyword")
-  if detector_failed:
+  if answer is None:
+    if evidence:
+      return CriterionResult(**base, status=CriterionStatus.PRESENT, source="keyword", evidence=evidence)
+    if detector is None:
+      return CriterionResult(**base, status=CriterionStatus.ABSENT, source="keyword")
     # Sem resposta do modelo, o sistema não afirma que o critério falta: destaca para o recrutador.
     return CriterionResult(**base, status=CriterionStatus.REVIEW, source=detector.source)
 
-  answer = answers[criterion.name]
+  status = _classify(answer.probability)
+  source = detector.source
+  if evidence:
+    # Regra de conflito: termo encontrado só deixa de pontuar se o modelo indicar ausência.
+    status = CriterionStatus.REVIEW if status == CriterionStatus.ABSENT else CriterionStatus.PRESENT
+    source = "keyword" if status == CriterionStatus.PRESENT else detector.source
   return CriterionResult(
     **base,
-    status=_classify(answer.probability),
-    source=detector.source,
+    status=status,
+    source=source,
+    evidence=evidence,
     probability=answer.probability,
     model_version=answer.model_version,
   )

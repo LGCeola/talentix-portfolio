@@ -79,32 +79,21 @@ def test_unexpected_payload_becomes_detector_error():
     detector(opener_returning({"model": "x", "answers": {}})).ask("Texto", CRITERIA)
 
 
-def test_failure_marks_only_unmatched_criteria_for_review():
+def test_failure_keeps_keyword_matches_and_marks_the_rest_for_review():
   def opener(request, timeout):
     raise TimeoutError()
 
   analysis = analyze("Dev Python", CRITERIA, detector(opener))
   assert analysis.score == 60
   assert analysis.results[0].status == CriterionStatus.PRESENT
+  assert analysis.results[0].source == "keyword"
   assert analysis.results[1].status == CriterionStatus.REVIEW
   assert analysis.results[1].source == "jev"
 
 
-def test_detector_is_skipped_when_keywords_match_everything():
-  calls = []
-
-  def opener(request, timeout):
-    calls.append(request)
-    return FakeResponse(b"{}")
-
-  analysis = analyze("Python e Liderança", CRITERIA, detector(opener))
-  assert analysis.score == 100
-  assert calls == []
-
-
-def test_only_redacted_text_and_unmatched_criteria_leave_the_system():
+def test_only_redacted_text_leaves_the_system():
   captured = {}
-  payload = {"model": "jev-1.14.0", "answers": {"c0": {"noul": 0.9}}, "usage": {"input_tokens": 10}}
+  payload = {"model": "jev-1.14.0", "answers": {"c0": {"noul": 0.8}, "c1": {"noul": 0.9}}, "usage": {"input_tokens": 10}}
   text = "João da Silva, joao@exemplo.com, (48) 99999-1234. Dev Python. Coordenei equipes."
 
   analysis = analyze(text, CRITERIA, detector(opener_returning(payload, captured)), private_terms=("João da Silva",))
@@ -112,8 +101,8 @@ def test_only_redacted_text_and_unmatched_criteria_leave_the_system():
   sent = captured["body"]["state"]["resume"]
   assert "João" not in sent and "Silva" not in sent and "joao@" not in sent and "99999" not in sent
   assert "Coordenei equipes" in sent
-  assert len(captured["body"]["questions"]) == 1
-  assert "Liderança" in captured["body"]["questions"]["c0"]["instructions"]
+  assert len(captured["body"]["questions"]) == 2
+  assert "Liderança" in captured["body"]["questions"]["c1"]["instructions"]
   assert analysis.results[1].status == CriterionStatus.PRESENT
   assert analysis.results[1].model_version == "jev-1.14.0"
   # A evidência local continua vindo do texto original.
