@@ -1,7 +1,9 @@
-"""Fórmula da nota: cada critério presente soma o seu peso; os demais somam zero."""
+"""Fórmula da nota: cada critério soma o seu peso, proporcional ao nível do candidato até o nível exigido."""
 
 from dataclasses import dataclass
 from enum import Enum
+
+DEFAULT_REQUIRED_LEVEL = 3
 
 
 class CriterionStatus(str, Enum):
@@ -15,6 +17,7 @@ class CriterionInput:
   name: str
   criterion_type: str
   weight: int
+  required_level: int = DEFAULT_REQUIRED_LEVEL
 
 
 @dataclass(frozen=True)
@@ -24,13 +27,22 @@ class CriterionResult:
   weight: int
   status: CriterionStatus
   source: str
+  required_level: int = DEFAULT_REQUIRED_LEVEL
   evidence: str | None = None
-  probability: float | None = None
+  # Preenchidos só quando o Jev estimou o nível; na busca por termos ficam nulos.
+  level: int | None = None
+  confidence: float | None = None
   model_version: str | None = None
 
   @property
-  def points(self) -> int:
-    return self.weight if self.status == CriterionStatus.PRESENT else 0
+  def points(self) -> float:
+    if self.status != CriterionStatus.PRESENT:
+      return 0.0
+    # Sem nível estimado (busca por termos), a presença vale o peso inteiro.
+    if self.level is None:
+      return float(self.weight)
+    # Acima do nível exigido não ganha mais: a nota mede a adequação à vaga.
+    return round(self.weight * min(self.level / self.required_level, 1), 2)
 
 
 def calculate_score(results: list[CriterionResult]) -> float:

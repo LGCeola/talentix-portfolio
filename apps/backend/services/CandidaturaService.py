@@ -63,7 +63,8 @@ class CandidaturaService:
     resume = self._get_resume(db, candidate, resume_id)
     # Sem detector externo: antes da candidatura não há consentimento para enviar o currículo a terceiros.
     analysis = self._analyze(vacancy, resume, None)
-    return CompatibilidadeResponse(score=analysis.score, criteria=analysis.to_details()["criteria"], suggestions=analysis.suggestions)
+    details = analysis.to_details()
+    return CompatibilidadeResponse(score=analysis.score, analysis_mode=details["analysis_mode"], criteria=details["criteria"], suggestions=analysis.suggestions)
 
   def list_mine(self, db: Session, candidate: User) -> list[Application]:
     return self.repository.list_by_candidate(db, candidate.id)
@@ -96,7 +97,12 @@ class CandidaturaService:
 
   def _analyze(self, vacancy: Vacancy, resume: Resume, detector: SemanticDetector | None, private_terms: tuple[str, ...] = ()) -> Analysis:
     criteria = [
-      CriterionInput(name=criterion.name, criterion_type=criterion.criterion_type.value, weight=criterion.weight)
+      CriterionInput(
+        name=criterion.name,
+        criterion_type=criterion.criterion_type.value,
+        weight=criterion.weight,
+        required_level=criterion.required_level,
+      )
       for criterion in sorted(vacancy.criteria, key=lambda item: item.id)
     ]
     return analyze(resume.extracted_text, criteria, detector, private_terms)

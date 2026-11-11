@@ -1,24 +1,36 @@
-from apps.backend.algorithm.analyzer import SemanticAnswer, analyze
+from apps.backend.algorithm.analyzer import MODE_KEYWORDS, MODE_LEVELS, LevelAnswer, SemanticDetectorError, analyze
 from apps.backend.algorithm.keyword_matcher import find_evidence
 from apps.backend.algorithm.score_calculator import CriterionInput, CriterionStatus
 
 CRITERIA = [
-  CriterionInput("Python", "habilidade", 50),
-  CriterionInput("APIs REST", "experiencia", 30),
-  CriterionInput("Graduação em TI", "formacao", 20),
+  CriterionInput("Python", "habilidade", 50, required_level=4),
+  CriterionInput("APIs REST", "experiencia", 30, required_level=3),
+  CriterionInput("Graduação em TI", "formacao", 20, required_level=3),
 ]
 
 
 class FakeDetector:
   source = "fake"
 
-  def __init__(self, probability: float):
-    self.probability = probability
+  def __init__(self, level: int, confidence: float = 0.95, levels: dict[str, int] | None = None):
+    self.level = level
+    self.confidence = confidence
+    self.levels = levels or {}
     self.calls: list[str] = []
 
-  def detect(self, resume_text: str, criteria: list[CriterionInput]) -> dict[str, SemanticAnswer]:
+  def detect(self, resume_text: str, criteria: list[CriterionInput]) -> dict[str, LevelAnswer]:
     self.calls.extend(criterion.name for criterion in criteria)
-    return {criterion.name: SemanticAnswer(probability=self.probability, model_version="fake-1") for criterion in criteria}
+    return {
+      criterion.name: LevelAnswer(level=self.levels.get(criterion.name, self.level), confidence=self.confidence, model_version="fake-1")
+      for criterion in criteria
+    }
+
+
+class FailingDetector:
+  source = "fake"
+
+  def detect(self, resume_text, criteria):
+    raise SemanticDetectorError("fora do ar")
 
 
 def test_match_ignores_case_and_accents():
@@ -43,16 +55,27 @@ def test_evidence_comes_from_original_text():
   assert "Integração Contínua" in find_evidence(text, "integracao continua")
 
 
-def test_score_sums_weights_of_present_criteria():
+# Sem detector: só busca por termos, com a presença valendo o peso inteiro.
+
+def test_keyword_mode_sums_weights_of_present_criteria():
   analysis = analyze("Dev Python com APIs REST", CRITERIA)
+  assert analysis.mode == MODE_KEYWORDS
   assert analysis.score == 80
   assert [result.status for result in analysis.results] == [CriterionStatus.PRESENT, CriterionStatus.PRESENT, CriterionStatus.ABSENT]
   assert [result.points for result in analysis.results] == [50, 30, 0]
+  assert all(result.level is None for result in analysis.results)
 
 
-def test_score_limits():
+def test_keyword_mode_limits():
   assert analyze("Nada relacionado", CRITERIA).score == 0
   assert analyze("Python, APIs REST e Graduação em TI", CRITERIA).score == 100
+
+
+def test_detector_failure_falls_back_to_keywords():
+  analysis = analyze("Dev Python", CRITERIA, FailingDetector())
+  assert analysis.mode == MODE_KEYWORDS
+  assert analysis.score == 50
+  assert analysis.results[0].source == "keyword"
 
 
 def test_same_input_gives_same_result():
@@ -60,70 +83,85 @@ def test_same_input_gives_same_result():
   assert analyze(text, CRITERIA) == analyze(text, CRITERIA)
 
 
-def test_suggestions_cover_only_missing_criteria_by_weight():
-  suggestions = analyze("Experiência com Java", CRITERIA).suggestions
-  assert len(suggestions) == 3
-  assert "Python" in suggestions[0]
-  assert "APIs REST" in suggestions[1]
-  assert analyze("Python, APIs REST e Graduação em TI", CRITERIA).suggestions == []
-
+# Com detector: nível estimado, pontos proporcionais até o nível exigido.
 
 def test_detector_evaluates_all_criteria():
-  detector = FakeDetector(0.9)
-  analyze("Dev Python", CRITERIA, detector)
+  detector = FakeDetector(3)
+  analysis = analyze("Dev Python", CRITERIA, detector)
+  assert analysis.mode == MODE_LEVELS
   assert detector.calls == ["Python", "APIs REST", "Graduação em TI"]
+
+
+def test_points_are_proportional_to_required_level():
+  # Python exige 4: nível 2 vale metade dos 50 pontos.
+  analysis = analyze("Texto", CRITERIA, FakeDetector(3, levels={"Python": 2}))
+  python, apis, education = analysis.results
+  assert python.status == CriterionStatus.PRESENT
+  assert python.points == 25
+  assert apis.points == 30
+  assert education.points == 20
+  assert analysis.score == 75
+
+
+def test_level_above_required_does_not_add_points():
+  junior = analyze("Texto", CRITERIA, FakeDetector(4)).score
+  senior = analyze("Texto", CRITERIA, FakeDetector(5)).score
+  assert junior == senior == 100
+
+
+def test_professor_example_junior_and_senior_differ():
+  # Mesma presença dos critérios, níveis diferentes: as notas deixam de ser iguais.
+  junior = analyze("Texto", CRITERIA, FakeDetector(2)).score
+  senior = analyze("Texto", CRITERIA, FakeDetector(5)).score
+  assert junior < senior
+
+
+def test_low_confidence_goes_to_review():
+  analysis = analyze("Texto", CRITERIA, FakeDetector(5, confidence=0.79))
+  assert all(result.status == CriterionStatus.REVIEW for result in analysis.results)
+  assert analysis.score == 0
+  assert analyze("Texto", CRITERIA, FakeDetector(5, confidence=0.8)).score == 100
+
+
+def test_level_zero_without_keyword_is_absent():
+  result = analyze("Texto", CRITERIA, FakeDetector(0)).results[0]
+  assert result.status == CriterionStatus.ABSENT
+  assert result.level == 0
 
 
 def test_keyword_contradicted_by_detector_goes_to_review():
   criterion = [CriterionInput("Python", "habilidade", 100)]
-  analysis = analyze("Não tenho experiência com Python", criterion, FakeDetector(0.05))
-  result = analysis.results[0]
+  result = analyze("Não tenho experiência com Python", criterion, FakeDetector(0)).results[0]
   assert result.status == CriterionStatus.REVIEW
   assert result.source == "fake"
-  assert result.probability == 0.05
   assert "Python" in result.evidence
-  assert analysis.score == 0
 
 
-def test_keyword_stays_present_unless_detector_says_absent():
-  criterion = [CriterionInput("Python", "habilidade", 100)]
-  for probability in (0.9, 0.7, 0.5, 0.31):
-    analysis = analyze("Dev Python", criterion, FakeDetector(probability))
-    result = analysis.results[0]
-    assert result.status == CriterionStatus.PRESENT
-    assert result.source == "keyword"
-    assert result.probability == probability
-    assert analysis.score == 100
-  assert analyze("Dev Python", criterion, FakeDetector(0.3)).results[0].status == CriterionStatus.REVIEW
+def test_missing_answer_goes_to_review():
+  class PartialDetector(FakeDetector):
+    def detect(self, resume_text, criteria):
+      return {"Python": LevelAnswer(level=4, confidence=0.9, model_version="fake-1")}
+
+  analysis = analyze("Texto", CRITERIA, PartialDetector(0))
+  assert [result.status for result in analysis.results] == [CriterionStatus.PRESENT, CriterionStatus.REVIEW, CriterionStatus.REVIEW]
 
 
-def test_criterion_without_keyword_follows_detector_with_no_evidence():
-  result = analyze("Dev Django", [CriterionInput("Python", "habilidade", 100)], FakeDetector(0.9)).results[0]
-  assert result.status == CriterionStatus.PRESENT
-  assert result.source == "fake"
-  assert result.evidence is None
-
-
-def test_detector_thresholds():
-  criterion = [CriterionInput("Liderança", "habilidade", 100)]
-  expected = {0.7: CriterionStatus.PRESENT, 0.69: CriterionStatus.REVIEW, 0.31: CriterionStatus.REVIEW, 0.3: CriterionStatus.ABSENT}
-  for probability, status in expected.items():
-    analysis = analyze("Texto", criterion, FakeDetector(probability))
-    assert analysis.results[0].status == status
-    assert analysis.results[0].source == "fake"
-    assert analysis.results[0].model_version == "fake-1"
-
-
-def test_review_scores_zero_and_generates_suggestion():
-  criterion = [CriterionInput("Liderança", "habilidade", 100)]
-  analysis = analyze("Texto", criterion, FakeDetector(0.5))
-  assert analysis.score == 0
-  assert len(analysis.suggestions) == 1
+def test_suggestions_cover_missing_and_below_level_criteria_by_weight():
+  analysis = analyze("Texto", CRITERIA, FakeDetector(3, levels={"Python": 2, "Graduação em TI": 0}))
+  assert len(analysis.suggestions) == 2
+  assert "Python" in analysis.suggestions[0] and "mais experiência" in analysis.suggestions[0]
+  assert "Graduação em TI" in analysis.suggestions[1]
+  assert analyze("Texto", CRITERIA, FakeDetector(5)).suggestions == []
 
 
 def test_details_are_json_ready():
-  details = analyze("Dev Python", CRITERIA).to_details()
-  assert details["algorithm_version"] == "2"
-  assert details["criteria"][0]["status"] == "present"
-  assert details["criteria"][0]["points"] == 50
-  assert "Python" in details["criteria"][0]["evidence"]
+  details = analyze("Dev Python", CRITERIA, FakeDetector(2)).to_details()
+  assert details["algorithm_version"] == "3"
+  assert details["analysis_mode"] == "levels"
+  first = details["criteria"][0]
+  assert first["status"] == "present"
+  assert first["points"] == 25
+  assert first["level"] == 2
+  assert first["required_level"] == 4
+  assert first["confidence"] == 0.95
+  assert "Python" in first["evidence"]

@@ -13,8 +13,12 @@
           <div class="criteria" aria-label="Critérios de avaliação">
             <span class="criteria-label">Como você será avaliado:</span>
             <ul>
-              <li v-for="criterion in vacancy.criteria" :key="criterion.id" :title="CRITERION_TYPE_LABELS[criterion.criterion_type]">
-                {{ criterion.name }} <strong>{{ criterion.weight }}%</strong>
+              <li
+                v-for="criterion in vacancy.criteria"
+                :key="criterion.id"
+                :title="`${CRITERION_TYPE_LABELS[criterion.criterion_type]} · nível exigido: ${levelLabel(criterion.criterion_type, criterion.required_level)}`"
+              >
+                {{ criterion.name }} <strong>{{ criterion.weight }}%</strong> <span class="level">· nível {{ criterion.required_level }}</span>
               </li>
             </ul>
           </div>
@@ -92,6 +96,7 @@
             v-if="expandedId === application.id"
             class="application-details"
             :criteria="application.score_details.criteria"
+            :mode="application.score_details.analysis_mode"
             :suggestions="splitSuggestions(application.improvement_suggestions)"
           />
         </li>
@@ -104,7 +109,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import { apiFetch } from '../../services/api.js'
-import { CRITERION_TYPE_LABELS } from '../vagas/vacancy.js'
+import { CRITERION_TYPE_LABELS, levelLabel } from '../vagas/vacancy.js'
 import CriteriaBreakdown from './CriteriaBreakdown.vue'
 import { APPLICATION_STATUS_LABELS, formatScore, splitSuggestions } from './application.js'
 

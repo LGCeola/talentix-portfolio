@@ -12,7 +12,7 @@
         </header>
         <ul class="criteria" aria-label="Critérios de avaliação">
           <li v-for="criterion in vacancy.criteria" :key="criterion.id">
-            {{ criterion.name }} <span>({{ CRITERION_TYPE_LABELS[criterion.criterion_type] }})</span> <strong>{{ criterion.weight }}%</strong>
+            {{ criterion.name }} <span>({{ CRITERION_TYPE_LABELS[criterion.criterion_type] }} · nível {{ criterion.required_level }}: {{ levelLabel(criterion.criterion_type, criterion.required_level) }})</span> <strong>{{ criterion.weight }}%</strong>
           </li>
         </ul>
       </section>
@@ -71,7 +71,7 @@
                 </tr>
                 <tr v-if="expandedId === application.id">
                   <td colspan="8">
-                    <CriteriaBreakdown :criteria="application.score_details.criteria" />
+                    <CriteriaBreakdown :criteria="application.score_details.criteria" :mode="application.score_details.analysis_mode" />
                   </td>
                 </tr>
               </template>
@@ -91,7 +91,7 @@ import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import AppLayout from '../../components/AppLayout.vue'
 import { apiFetch } from '../../services/api.js'
-import { CRITERION_TYPE_LABELS, STATUS_LABELS } from '../vagas/vacancy.js'
+import { CRITERION_TYPE_LABELS, STATUS_LABELS, levelLabel } from '../vagas/vacancy.js'
 import CriteriaBreakdown from './CriteriaBreakdown.vue'
 import { APPLICATION_STATUS_LABELS, formatScore } from './application.js'
 

@@ -4,12 +4,12 @@ import urllib.error
 
 import pytest
 
-from apps.backend.algorithm.analyzer import SemanticAnswer, SemanticDetectorError, analyze
+from apps.backend.algorithm.analyzer import MODE_KEYWORDS, LevelAnswer, SemanticDetectorError, analyze
 from apps.backend.algorithm.anonymizer import redact
 from apps.backend.algorithm.score_calculator import CriterionInput, CriterionStatus
-from apps.backend.integrations.jev import JevDetector
+from apps.backend.integrations.jev import EDUCATION_LEVELS, PRACTICE_LEVELS, JevDetector
 
-CRITERIA = [CriterionInput("Python", "habilidade", 60), CriterionInput("Liderança", "experiencia", 40)]
+CRITERIA = [CriterionInput("Python", "habilidade", 60, required_level=4), CriterionInput("Computação", "formacao", 40, required_level=3)]
 SECRET = "chave-de-teste-nao-real"
 
 
@@ -33,14 +33,19 @@ def detector(opener):
   return JevDetector(SECRET, "jev-1.14.0", 3.0, opener=opener)
 
 
+def score_answer(peak: int, confidence: float = 0.95) -> dict:
+  probabilities = {str(level): (0.9 if level == peak else 0.02) for level in range(6)}
+  return {"type": "score", "probabilities": probabilities, "score": float(peak), "confidence": confidence}
+
+
 VALID = {
   "model": "jev-1.14.0",
-  "answers": {"c0": {"type": "noul", "noul": 0.91}, "c1": {"type": "noul", "noul": 0.12}},
+  "answers": {"c0": score_answer(4), "c1": score_answer(3, confidence=0.6)},
   "usage": {"input_tokens": 80, "output_tokens": 2},
 }
 
 
-def test_request_uses_one_call_with_one_question_per_criterion():
+def test_request_uses_one_score_question_per_criterion():
   captured = {}
   result = detector(opener_returning(VALID, captured)).ask("Texto", CRITERIA)
 
@@ -49,9 +54,22 @@ def test_request_uses_one_call_with_one_question_per_criterion():
   assert captured["timeout"] == 3.0
   assert captured["body"]["model"] == "jev-1.14.0"
   assert captured["body"]["state"] == {"resume": "Texto"}
-  assert [question["type"] for question in captured["body"]["questions"].values()] == ["noul", "noul"]
-  assert result.answers["Python"] == SemanticAnswer(0.91, "jev-1.14.0")
+  questions = captured["body"]["questions"]
+  assert [question["type"] for question in questions.values()] == ["score", "score"]
+  assert len(questions["c0"]["criteria"]) == len(PRACTICE_LEVELS) == 6
+  assert "Python" in questions["c0"]["instructions"]
+  assert all("Python" in level for level in questions["c0"]["criteria"])
+  # Formação usa a escala própria.
+  assert questions["c1"]["criteria"][3] == EDUCATION_LEVELS[3].format(name="Computação")
+  assert result.answers["Python"] == LevelAnswer(level=4, confidence=0.95, model_version="jev-1.14.0")
   assert result.input_tokens == 80
+
+
+def test_low_confidence_answer_is_kept_for_the_analyzer_to_decide():
+  analysis = analyze("Texto", CRITERIA, detector(opener_returning(VALID)))
+  python, education = analysis.results
+  assert python.status == CriterionStatus.PRESENT and python.points == 60
+  assert education.status == CriterionStatus.REVIEW and education.level == 3
 
 
 def test_http_error_does_not_leak_secret_or_body():
@@ -74,37 +92,34 @@ def test_network_failure_becomes_detector_error(failure):
     detector(opener).ask("Texto", CRITERIA)
 
 
-def test_unexpected_payload_becomes_detector_error():
+@pytest.mark.parametrize("payload", [
+  {"model": "x", "answers": {}},
+  {"model": "x", "answers": {"c0": {"probabilities": {"0": 1.0}, "confidence": 1.0}, "c1": score_answer(1)}, "usage": {"input_tokens": 1}},
+])
+def test_unexpected_payload_becomes_detector_error(payload):
   with pytest.raises(SemanticDetectorError):
-    detector(opener_returning({"model": "x", "answers": {}})).ask("Texto", CRITERIA)
+    detector(opener_returning(payload)).ask("Texto", CRITERIA)
 
 
-def test_failure_keeps_keyword_matches_and_marks_the_rest_for_review():
+def test_failure_falls_back_to_keyword_analysis():
   def opener(request, timeout):
     raise TimeoutError()
 
   analysis = analyze("Dev Python", CRITERIA, detector(opener))
+  assert analysis.mode == MODE_KEYWORDS
   assert analysis.score == 60
-  assert analysis.results[0].status == CriterionStatus.PRESENT
   assert analysis.results[0].source == "keyword"
-  assert analysis.results[1].status == CriterionStatus.REVIEW
-  assert analysis.results[1].source == "jev"
 
 
 def test_only_redacted_text_leaves_the_system():
   captured = {}
-  payload = {"model": "jev-1.14.0", "answers": {"c0": {"noul": 0.8}, "c1": {"noul": 0.9}}, "usage": {"input_tokens": 10}}
-  text = "João da Silva, joao@exemplo.com, (48) 99999-1234. Dev Python. Coordenei equipes."
+  text = "João da Silva, joao@exemplo.com, (48) 99999-1234. Dev Python. Bacharel em Ciência da Computação."
 
-  analysis = analyze(text, CRITERIA, detector(opener_returning(payload, captured)), private_terms=("João da Silva",))
+  analysis = analyze(text, CRITERIA, detector(opener_returning(VALID, captured)), private_terms=("João da Silva",))
 
   sent = captured["body"]["state"]["resume"]
   assert "João" not in sent and "Silva" not in sent and "joao@" not in sent and "99999" not in sent
-  assert "Coordenei equipes" in sent
-  assert len(captured["body"]["questions"]) == 2
-  assert "Liderança" in captured["body"]["questions"]["c1"]["instructions"]
-  assert analysis.results[1].status == CriterionStatus.PRESENT
-  assert analysis.results[1].model_version == "jev-1.14.0"
+  assert "Bacharel em Ciência da Computação" in sent
   # A evidência local continua vindo do texto original.
   assert "Python" in analysis.results[0].evidence
 

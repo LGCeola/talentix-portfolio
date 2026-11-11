@@ -97,7 +97,7 @@ class VagaService:
     vacancy.title = payload.title
     vacancy.description = payload.description
     vacancy.status = payload.status
-    vacancy.criteria = [Criterion(name=item.name, criterion_type=item.criterion_type, weight=item.weight) for item in payload.criteria]
+    vacancy.criteria = [Criterion(name=item.name, criterion_type=item.criterion_type, weight=item.weight, required_level=item.required_level) for item in payload.criteria]
 
   def _ensure_publishable(self, description: str, criteria: list) -> None:
     if not description:

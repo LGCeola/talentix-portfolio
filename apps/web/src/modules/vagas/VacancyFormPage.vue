@@ -16,9 +16,10 @@
         <textarea id="description" v-model="description" rows="6" maxlength="10000" placeholder="Responsabilidades, contexto da equipe, regime de trabalho..."></textarea>
 
         <fieldset class="criteria">
-          <legend>Requisitos e pesos</legend>
+          <legend>Requisitos, níveis e pesos</legend>
           <p class="hint">
-            Cada requisito vale uma parte da nota final do candidato, de 0 a 100. Para publicar, os pesos precisam somar 100%.
+            Cada requisito vale uma parte da nota final do candidato e tem um nível exigido. Quem está abaixo do nível recebe parte do peso;
+            acima dele, não ganha pontos extras. Para publicar, os pesos precisam somar 100%.
           </p>
 
           <div v-for="(criterion, index) in criteria" :key="criterion.key" class="criterion-row">
@@ -31,6 +32,11 @@
             />
             <select v-model="criterion.criterion_type" :aria-label="`Tipo do requisito ${index + 1}`">
               <option v-for="type in CRITERION_TYPES" :key="type.value" :value="type.value">{{ type.label }}</option>
+            </select>
+            <select v-model.number="criterion.required_level" :aria-label="`Nível exigido do requisito ${index + 1}`">
+              <option v-for="level in REQUIRED_LEVELS" :key="level" :value="level">
+                Nível {{ level }} · {{ levelLabel(criterion.criterion_type, level) }}
+              </option>
             </select>
             <div class="weight-input">
               <input
@@ -83,7 +89,7 @@ import PlusIcon from '~icons/lucide/plus'
 import TrashIcon from '~icons/lucide/trash-2'
 import AppLayout from '../../components/AppLayout.vue'
 import { apiFetch } from '../../services/api.js'
-import { CRITERION_TYPES, STATUS_LABELS, totalWeight } from './vacancy.js'
+import { CRITERION_TYPES, DEFAULT_REQUIRED_LEVEL, REQUIRED_LEVELS, STATUS_LABELS, levelLabel, totalWeight } from './vacancy.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -101,7 +107,7 @@ const error = ref('')
 
 let nextKey = 0
 function newCriterion(data = {}) {
-  return { key: nextKey++, name: '', criterion_type: 'habilidade', weight: 10, ...data }
+  return { key: nextKey++, name: '', criterion_type: 'habilidade', required_level: DEFAULT_REQUIRED_LEVEL, weight: 10, ...data }
 }
 
 const total = computed(() => totalWeight(criteria.value))
@@ -133,7 +139,7 @@ onMounted(async () => {
     const vacancy = await apiFetch(`/api/vagas/${vacancyId}`)
     title.value = vacancy.title
     description.value = vacancy.description
-    criteria.value = vacancy.criteria.map(({ name, criterion_type, weight }) => newCriterion({ name, criterion_type, weight }))
+    criteria.value = vacancy.criteria.map(({ name, criterion_type, required_level, weight }) => newCriterion({ name, criterion_type, required_level, weight }))
     currentStatus.value = vacancy.status
     if (vacancy.status === 'closed') error.value = 'Vagas encerradas não podem ser editadas.'
   } catch (requestError) {
@@ -162,7 +168,7 @@ async function save(status) {
         title: title.value,
         description: description.value,
         status,
-        criteria: criteria.value.map(({ name, criterion_type, weight }) => ({ name, criterion_type, weight })),
+        criteria: criteria.value.map(({ name, criterion_type, required_level, weight }) => ({ name, criterion_type, required_level, weight })),
       }),
     })
     router.push({ name: 'Dashboard' })
@@ -176,7 +182,7 @@ async function save(status) {
 
 <style scoped>
 .form-panel {
-  max-width: 760px;
+  max-width: 920px;
   margin: 0 auto;
 }
 
@@ -239,7 +245,7 @@ select:focus {
 
 .criterion-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 150px 100px 40px;
+  grid-template-columns: minmax(0, 1fr) 140px 250px 100px 40px;
   gap: 8px;
   align-items: center;
 }
@@ -394,7 +400,8 @@ select:focus {
     grid-template-columns: minmax(0, 1fr) 90px 40px;
   }
 
-  .criterion-row input[type="text"] {
+  .criterion-row input[type="text"],
+  .criterion-row select {
     grid-column: 1 / -1;
   }
 

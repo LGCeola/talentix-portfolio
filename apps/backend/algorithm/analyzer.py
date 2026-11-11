@@ -11,26 +11,30 @@ from apps.backend.algorithm.score_calculator import CriterionInput, CriterionRes
 
 logger = logging.getLogger(__name__)
 
-ALGORITHM_VERSION = "2"
-PRESENT_THRESHOLD = 0.7
-ABSENT_THRESHOLD = 0.3
+ALGORITHM_VERSION = "3"
+# Abaixo desta confiança o nível estimado não pontua: o critério fica "a revisar".
+MIN_CONFIDENCE = 0.8
+
+MODE_LEVELS = "levels"  # Nível estimado pelo Jev.
+MODE_KEYWORDS = "keywords"  # Só busca por termos: Jev desligado ou fora do ar.
 
 
 @dataclass(frozen=True)
-class SemanticAnswer:
-  probability: float
+class LevelAnswer:
+  level: int  # 0 = não encontrado; 1 a 5 = nível de evidência no currículo.
+  confidence: float
   model_version: str
 
 
 class SemanticDetectorError(Exception):
-  """O detector externo não respondeu; a análise continua sem ele."""
+  """O detector externo não respondeu; a análise continua só com a busca por termos."""
 
 
 class SemanticDetector(Protocol):
-  """Ponto de conexão de um modelo externo (ex.: Jev), que avalia todos os critérios junto com a busca."""
+  """Ponto de conexão de um modelo externo (ex.: Jev), que estima o nível do candidato em cada critério."""
   source: str
 
-  def detect(self, resume_text: str, criteria: list[CriterionInput]) -> dict[str, SemanticAnswer]:
+  def detect(self, resume_text: str, criteria: list[CriterionInput]) -> dict[str, LevelAnswer]:
     ...
 
 
@@ -39,20 +43,24 @@ class Analysis:
   score: float
   results: list[CriterionResult]
   suggestions: list[str]
+  mode: str
 
   def to_details(self) -> dict:
     return {
       "algorithm_version": ALGORITHM_VERSION,
+      "analysis_mode": self.mode,
       "criteria": [
         {
           "name": result.name,
           "criterion_type": result.criterion_type,
           "weight": result.weight,
+          "required_level": result.required_level,
           "status": result.status.value,
           "points": result.points,
           "source": result.source,
           "evidence": result.evidence,
-          "probability": result.probability,
+          "level": result.level,
+          "confidence": result.confidence,
           "model_version": result.model_version,
         }
         for result in self.results
@@ -69,8 +77,13 @@ def analyze(
   evidences = {criterion.name: find_evidence(resume_text, criterion.name) for criterion in criteria}
   answers = _ask_detector(resume_text, criteria, detector, private_terms)
 
-  results = [_evaluate(criterion, evidences[criterion.name], answers.get(criterion.name), detector) for criterion in criteria]
-  return Analysis(score=calculate_score(results), results=results, suggestions=build_suggestions(results))
+  if answers is None:
+    results = [_by_keyword(criterion, evidences[criterion.name]) for criterion in criteria]
+    mode = MODE_KEYWORDS
+  else:
+    results = [_by_level(criterion, evidences[criterion.name], answers.get(criterion.name), detector.source) for criterion in criteria]
+    mode = MODE_LEVELS
+  return Analysis(score=calculate_score(results), results=results, suggestions=build_suggestions(results), mode=mode)
 
 
 def _ask_detector(
@@ -78,52 +91,49 @@ def _ask_detector(
   criteria: list[CriterionInput],
   detector: SemanticDetector | None,
   private_terms: tuple[str, ...],
-) -> dict[str, SemanticAnswer]:
+) -> dict[str, LevelAnswer] | None:
+  """Devolve None quando a análise deve ser só por termos."""
   if detector is None or not criteria:
-    return {}
+    return None
   try:
     # Único ponto em que o currículo sai do sistema: sempre sem os dados pessoais.
     return detector.detect(redact(resume_text, private_terms), criteria)
   except SemanticDetectorError as error:
-    logger.warning("Análise sem detector externo: %s", error)
-    return {}
+    logger.warning("Análise só por termos, sem detector externo: %s", error)
+    return None
 
 
-def _evaluate(
-  criterion: CriterionInput,
-  evidence: str | None,
-  answer: SemanticAnswer | None,
-  detector: SemanticDetector | None,
-) -> CriterionResult:
-  base = {"name": criterion.name, "criterion_type": criterion.criterion_type, "weight": criterion.weight}
+def _base(criterion: CriterionInput) -> dict:
+  return {
+    "name": criterion.name,
+    "criterion_type": criterion.criterion_type,
+    "weight": criterion.weight,
+    "required_level": criterion.required_level,
+  }
 
+
+def _by_keyword(criterion: CriterionInput, evidence: str | None) -> CriterionResult:
+  status = CriterionStatus.PRESENT if evidence else CriterionStatus.ABSENT
+  return CriterionResult(**_base(criterion), status=status, source="keyword", evidence=evidence)
+
+
+def _by_level(criterion: CriterionInput, evidence: str | None, answer: LevelAnswer | None, source: str) -> CriterionResult:
   if answer is None:
-    if evidence:
-      return CriterionResult(**base, status=CriterionStatus.PRESENT, source="keyword", evidence=evidence)
-    if detector is None:
-      return CriterionResult(**base, status=CriterionStatus.ABSENT, source="keyword")
-    # Sem resposta do modelo, o sistema não afirma que o critério falta: destaca para o recrutador.
-    return CriterionResult(**base, status=CriterionStatus.REVIEW, source=detector.source)
+    return CriterionResult(**_base(criterion), status=CriterionStatus.REVIEW, source=source, evidence=evidence)
 
-  status = _classify(answer.probability)
-  source = detector.source
-  if evidence:
-    # Regra de conflito: termo encontrado só deixa de pontuar se o modelo indicar ausência.
-    status = CriterionStatus.REVIEW if status == CriterionStatus.ABSENT else CriterionStatus.PRESENT
-    source = "keyword" if status == CriterionStatus.PRESENT else detector.source
+  if answer.confidence < MIN_CONFIDENCE:
+    status = CriterionStatus.REVIEW
+  elif answer.level == 0:
+    # Regra de conflito: termo encontrado, mas o modelo não reconhece o critério (ex.: negação).
+    status = CriterionStatus.REVIEW if evidence else CriterionStatus.ABSENT
+  else:
+    status = CriterionStatus.PRESENT
   return CriterionResult(
-    **base,
+    **_base(criterion),
     status=status,
     source=source,
     evidence=evidence,
-    probability=answer.probability,
+    level=answer.level,
+    confidence=answer.confidence,
     model_version=answer.model_version,
   )
-
-
-def _classify(probability: float) -> CriterionStatus:
-  if probability >= PRESENT_THRESHOLD:
-    return CriterionStatus.PRESENT
-  if probability <= ABSENT_THRESHOLD:
-    return CriterionStatus.ABSENT
-  return CriterionStatus.REVIEW

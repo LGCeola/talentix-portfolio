@@ -89,7 +89,7 @@ Os arquivos são gravados em `UPLOAD_DIR` (padrão `apps/backend/uploads/`, fora
 
 ### Regras dos critérios
 
-- Cada critério tem nome (2–50 caracteres, sem repetir na vaga), tipo (`habilidade`, `experiencia` ou `formacao`) e peso inteiro de 1 a 100, que representa o percentual da nota final (0–100).
+- Cada critério tem nome (2–50 caracteres, sem repetir na vaga), tipo (`habilidade`, `experiencia` ou `formacao`), peso inteiro de 1 a 100, que representa o percentual da nota final (0–100), e nível exigido (`required_level`, de 1 a 5, padrão 3).
 - A soma dos pesos nunca passa de 100%. Rascunhos podem estar incompletos.
 - Para publicar, a vaga precisa de descrição, ao menos um critério (RN03) e pesos somando exatamente 100%.
 - Ciclo de vida: `draft` → `open` ⇄ `closed`. Rascunhos não podem ser encerrados, apenas excluídos.
@@ -114,13 +114,16 @@ Regras:
 
 Código em `algorithm/`, sem dependência de HTTP ou banco. Testes: `python -m pytest apps/backend/tests`, a partir da raiz.
 
-- **Nota:** soma dos pesos dos critérios presentes (0–100). Critérios ausentes ou a revisar não pontuam.
+- **Nota:** cada critério vale `peso × mínimo(nível ÷ nível exigido, 1)`, e a soma vai de 0 a 100. Acima do nível exigido não há pontos extras. Critérios ausentes ou a revisar não pontuam.
+- **Níveis:** 0 = não encontrado; 1 = citado; 2 = estudou (curso ou disciplina); 3 = aplicou em projeto; 4 = uso profissional; 5 = referência (liderou, ensinou ou foi responsável técnico). Para formação: 1 = curso livre ou técnico (ou graduação trancada); 2 = graduação em andamento; 3 = concluída; 4 = pós-graduação; 5 = mestrado ou doutorado.
 - **Busca (`keyword_matcher.py`):** procura o nome do critério no texto, ignorando caixa e acentos, e guarda o trecho como evidência. É sempre determinística.
-- **Modelo externo (`analyzer.py`):** a interface `SemanticDetector` permite consultar um modelo sobre todos os critérios, classificando a probabilidade em presente (≥ 0,7), ausente (≤ 0,3) ou a revisar. O cliente do Jev está em `integrations/jev.py` e fica **desligado por padrão** (`JEV_ENABLED=false`). Ao ligar, a tela de candidatura passa a informar o envio no consentimento. A simulação de compatibilidade nunca usa o modelo, porque roda antes do consentimento.
-- **Regra de conflito:** termo encontrado e modelo indicando ausência ficam "a revisar" e não pontuam; termo encontrado com qualquer outra resposta fica presente; sem termo, vale a resposta do modelo. O recrutador vê o "a revisar", mas ainda não pode confirmá-lo para somar pontos.
+- **Modelo externo (`analyzer.py`):** a interface `SemanticDetector` consulta um modelo sobre todos os critérios e recebe o nível mais provável e a confiança. Confiança abaixo de 0,8 deixa o critério "a revisar". O Jev usa uma pergunta Score por critério, com as escalas descritas em `integrations/jev.py`. O cliente do Jev está em `integrations/jev.py` e fica **desligado por padrão** (`JEV_ENABLED=false`). Ao ligar, a tela de candidatura passa a informar o envio no consentimento. A simulação de compatibilidade nunca usa o modelo, porque roda antes do consentimento.
+- **Regra de conflito:** se a busca encontra o termo e o modelo responde nível 0, o critério fica "a revisar" e não pontua (ex.: "não tenho experiência com Python"). O recrutador vê o "a revisar", mas ainda não pode confirmá-lo para somar pontos.
+- **Só busca por termos:** com `JEV_ENABLED=false` ou com a API fora do ar, cada critério encontrado vale o peso inteiro, sem nível. `score_details.analysis_mode` registra `levels` ou `keywords`, e a tela avisa quando a análise foi só por termos.
 - **Privacidade (`anonymizer.py`):** antes de sair do sistema, o texto perde e-mail, telefone, CPF, CEP, links de perfil, datas completas e o nome do candidato. É uma remoção por padrões: não garante eliminar qualquer dado pessoal escrito de outra forma, como um endereço.
-- **Falha do modelo externo:** a candidatura continua válida. Critérios com o termo encontrado ficam presentes, e os demais ficam "a revisar". Não há nova tentativa automática.
-- **Comparação (`evaluation/`):** `python -m apps.backend.evaluation.compare_jev --output resultado.json`, a partir da raiz, compara as estratégias com os currículos fictícios de `resumes.json`. Faz chamadas reais e pagas à API.
+- **Falha do modelo externo:** a candidatura continua válida e é analisada só pela busca por termos. Não há nova tentativa automática.
+- **Versões:** `score_details.algorithm_version` é `3` a partir dos níveis. Candidaturas antigas mantêm a nota e os detalhes da versão em que foram analisadas.
+- **Comparação (`evaluation/`):** `python -m apps.backend.evaluation.compare_levels --output resultado.json`, a partir da raiz, mede se o Jev estima o nível certo nos currículos fictícios de `levels.json` e calcula as notas em duas vagas de exemplo. Faz chamadas reais e pagas à API. Os currículos e rótulos foram escritos pela equipe do projeto.
 - **Limitações:** só reconhece o termo exato, sem sinônimos (`APIs REST` não casa com `serviços web`), e não entende negação (`não tenho experiência com Python` conta como presente). Por isso o resultado apoia a triagem, e a decisão é do recrutador (RN08).
 
 ## Erros

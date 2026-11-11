@@ -1,11 +1,12 @@
 <template>
   <div class="breakdown">
+    <p v-if="mode === 'keywords'" class="mode-notice">{{ KEYWORD_MODE_NOTICE }}</p>
     <ul class="criteria-results">
       <li v-for="criterion in criteria" :key="criterion.name">
         <div class="criterion-line">
           <strong>{{ criterion.name }}</strong>
           <span class="criterion-status" :class="criterion.status">{{ CRITERION_STATUS_LABELS[criterion.status] }}</span>
-          <span class="points">{{ criterion.points }} de {{ criterion.weight }} pontos</span>
+          <span class="points">{{ formatPoints(criterion.points) }} de {{ criterion.weight }} pontos</span>
         </div>
         <p v-if="describeDetection(criterion)" class="detection">{{ describeDetection(criterion) }}</p>
         <p v-if="criterion.evidence" class="evidence">“{{ criterion.evidence }}”</p>
@@ -22,11 +23,13 @@
 </template>
 
 <script setup>
-import { CRITERION_STATUS_LABELS, describeDetection } from './application.js'
+import { CRITERION_STATUS_LABELS, KEYWORD_MODE_NOTICE, describeDetection, formatPoints } from './application.js'
 
 defineProps({
   criteria: { type: Array, required: true },
   suggestions: { type: Array, default: () => [] },
+  // "levels" ou "keywords"; nulo em análises antigas ou na simulação.
+  mode: { type: String, default: null },
 })
 </script>
 
@@ -78,6 +81,15 @@ defineProps({
 .points {
   margin-left: auto;
   color: #64748b;
+}
+
+.mode-notice {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #fef9c3;
+  color: #854d0e;
+  line-height: 1.4;
 }
 
 .detection {
