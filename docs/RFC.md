@@ -199,13 +199,13 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 **Recrutadores / Empresas:**
 - **RF09:** O sistema deve permitir o cadastro de recrutadores.
 - **RF10:** O sistema deve permitir que recrutadores criem vagas com requisitos definidos.
-- **RF11:** O sistema deve permitir definir critérios e pesos para avaliação de candidatos.
+- **RF11:** O sistema deve permitir definir critérios, pesos e o nível exigido de cada critério (1 a 5) para avaliação de candidatos.
 - **RF12:** O sistema deve receber currículos vinculados às vagas criadas.
 - **RF13:** O sistema deve gerar automaticamente um ranking de candidatos para cada vaga, **servindo como ferramenta de apoio à triagem inicial sem autonomia de desclassificação definitiva.**
 - **RF14:** O sistema deve permitir visualizar os detalhes da pontuação de cada candidato.
 
 **Sistema:**
-- **RF15:** O sistema deve utilizar um algoritmo próprio para calcular a nota do currículo em cada vaga, somando os pesos dos critérios presentes. Para verificar se um critério está presente, o algoritmo combina busca por termos e um modelo externo de análise de texto, que não define pesos nem calcula a nota.
+- **RF15:** O sistema deve utilizar um algoritmo próprio para calcular a nota do currículo em cada vaga. Cada critério soma o seu peso proporcionalmente ao nível do candidato, até o nível exigido pela vaga. Para estimar o nível, o algoritmo combina busca por termos e um modelo externo de análise de texto, que não define pesos nem calcula a nota.
 - **RF16:** O sistema deve garantir que a avaliação seja baseada em critérios explícitos e configuráveis.
 - **RF17:** O sistema deve armazenar os dados dos usuários, currículos e vagas.
 
@@ -234,7 +234,7 @@ A avaliação do sucesso do projeto será realizada com base em métricas relaci
 - Sistema completo de folha de pagamento ou RH.
 - Análise comportamental avançada baseada em vídeo.
 - Aplicativo mobile nativo.
-- Utilização de inteligência artificial generativa para gerar conteúdo ou decidir candidaturas; o Jev é usado apenas para classificar a presença de critérios.
+- Utilização de inteligência artificial generativa para gerar conteúdo ou decidir candidaturas; o Jev é usado apenas para estimar o nível do candidato em cada critério.
 - Suporte multilíngue.
 
 ---
@@ -335,9 +335,9 @@ Já o fluxo alternativo é responsável por apresentar o caminho esperado durant
 ### 5.3. PRINCIPAIS COMPONENTES
 1. **AuthController:** Responsável por garantir acessos seguros via tokens, como o JWT, protegendo as rotas de candidatos e recrutadores conforme as boas práticas (RNF03 e RNF04).
 2. **Parser de Documentos (Ingestion Engine):** Componente isolado encarregado de receber o upload de arquivos primordialmente em formato **PDF ou texto**, para extrair os metadados brutos e normalizar a informação para leitura do algoritmo.
-3. **Core Engine (Algoritmo Proprietário):** O coração do sistema. Ele cruza os dados extraídos do currículo com as regras contidas na tabela "criterios_vaga". O cálculo da nota é matemático e explícito. A presença de cada critério é verificada pela busca por termos e pelo Detector Semântico, e o sistema registra o status, a origem e a versão do modelo. Divergências entre os dois, e probabilidades intermediárias sem termo encontrado, ficam "a revisar" e não somam pontos.
+3. **Core Engine (Algoritmo Proprietário):** O coração do sistema. Ele cruza os dados extraídos do currículo com as regras contidas na tabela "criterios_vaga". O cálculo da nota é matemático e explícito: cada critério vale peso × mínimo(nível do candidato ÷ nível exigido, 1), e um candidato acima do nível exigido não ganha pontos extras. O nível de cada critério é estimado pelo Detector Semântico, e o sistema registra o nível, a confiança, a evidência encontrada pela busca e a versão do modelo. Respostas com confiança abaixo de 0,8, e critérios em que a busca encontra o termo mas o modelo não reconhece o critério, ficam "a revisar" e não somam pontos. Com o modelo desligado ou fora do ar, a análise usa só a busca por termos, cada critério encontrado vale o peso inteiro, e a tela informa isso.
 4. **Gerador de Feedbacks (Explainer Component):** Componente que traduz a pontuação final gerada pela Engine em uma interface amigável para o usuário, mapeando as lacunas.
-5. **Detector Semântico (`integrations/jev.py`):** Envia o texto anonimizado e os critérios da vaga ao Jev e recebe a probabilidade de cada critério estar presente. Se a API falhar, a candidatura continua válida e os critérios sem resposta ficam "a revisar". *Situação atual:* o cliente está implementado, mas desligado por padrão (`JEV_ENABLED=false`). *Limitação conhecida:* o recrutador vê os critérios "a revisar", mas ainda não pode confirmá-los para somar pontos.
+5. **Detector Semântico (`integrations/jev.py`):** Envia o texto anonimizado e os critérios da vaga ao Jev, com uma pergunta do tipo Score por critério, e recebe o nível mais provável (0 a 5) e a confiança. Os níveis descrevem evidências no currículo: citado, estudou, aplicou em projeto, uso profissional e referência; para formação, de curso livre a mestrado ou doutorado. Se a API falhar, a candidatura continua válida e é analisada só pela busca por termos. *Situação atual:* o cliente está implementado, mas desligado por padrão (`JEV_ENABLED=false`). *Limitação conhecida:* o recrutador vê os critérios "a revisar", mas ainda não pode confirmá-los para somar pontos.
 
 ### 5.4. STACK TECNOLÓGICA
 A escolha das tecnologias foca em alta performance para análise síncrona e assíncrona, e facilita a manipulação de strings para o algoritmo:
@@ -345,7 +345,7 @@ A escolha das tecnologias foca em alta performance para análise síncrona e ass
 - **Backend / API:** Python (FastAPI).
 - **Engine do Algoritmo:** Python.
   - *Justificativa:* Bibliotecas nativas e maduras de processamento de texto e extração de PDF (PyPDF, pdfplumber ou ferramentas de Expressões Regulares) permitem construir uma busca e um cálculo de nota rápidos, explícitos e auditáveis, unificando a API e a Engine no mesmo ecossistema.
-- **Apoio à análise de texto:** Jev (TypeSafe), versão `jev-1.14.0`, fixada para evitar mudanças sem aviso.
+- **Apoio à análise de texto:** Jev (TypeSafe), versão `jev-1.14.0`, fixada para evitar mudanças sem aviso, com perguntas do tipo Score para estimar níveis.
   - *Justificativa:* Baixo custo e capacidade de reconhecer sinônimos e negações que a busca por termos não identifica. Como as respostas podem variar entre execuções, a nota é gravada no momento da candidatura.
 - **Banco de Dados Principal:** PostgreSQL.
   - *Justificativa:* Banco relacional robusto, ideal para consistência de dados (RNF07), além de possuir excelente suporte nativo ao tipo de dado JSONB para salvar detalhes das pontuações mutáveis de forma performática.
