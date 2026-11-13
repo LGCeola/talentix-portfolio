@@ -6,10 +6,7 @@
         <span>talentix</span>
       </RouterLink>
 
-      <div class="topbar-user">
-        <RouterLink class="account-link" :to="{ name: 'Account' }">{{ userName ?? user?.name }}</RouterLink>
-        <button type="button" class="logout-button" @click="logout">Sair</button>
-      </div>
+      <ProfileDropdown :user-name="userName" />
     </header>
 
     <main class="app-content">
@@ -19,21 +16,12 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
-import { clearSession, getCurrentUser } from '../services/api.js'
+import ProfileDropdown from '../modules/auth/components/dropdown/ProfileDropdown.vue'
 
 defineProps({
   // Permite à página de conta mostrar o nome recém-editado.
   userName: { type: String, default: null },
 })
-
-const router = useRouter()
-const user = getCurrentUser()
-
-function logout() {
-  clearSession()
-  router.push({ name: 'Login' })
-}
 </script>
 
 <style scoped>
@@ -60,39 +48,6 @@ function logout() {
   border-color: #2563eb;
   background: #2563eb;
   color: #fff;
-}
-
-.topbar-user {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #475569;
-  font-weight: 600;
-}
-
-.account-link {
-  color: inherit;
-  text-decoration: none;
-}
-
-.account-link:hover {
-  color: #2563eb;
-  text-decoration: underline;
-}
-
-.logout-button {
-  padding: 8px 16px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #fff;
-  color: #172033;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.logout-button:hover {
-  border-color: #2563eb;
-  color: #2563eb;
 }
 
 .app-content {

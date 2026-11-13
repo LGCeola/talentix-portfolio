@@ -52,18 +52,30 @@
             <button v-if="vacancy.status === 'draft'" type="button" class="action" :disabled="busyId === vacancy.id" @click="changeStatus(vacancy, 'open')">Publicar</button>
             <button v-if="vacancy.status === 'open'" type="button" class="action" :disabled="busyId === vacancy.id" @click="changeStatus(vacancy, 'closed')">Encerrar</button>
             <button v-if="vacancy.status === 'closed'" type="button" class="action" :disabled="busyId === vacancy.id" @click="changeStatus(vacancy, 'open')">Reabrir</button>
-            <button v-if="vacancy.status === 'draft'" type="button" class="action danger" :disabled="busyId === vacancy.id" @click="remove(vacancy)">Excluir</button>
+            <button v-if="vacancy.status === 'draft'" type="button" class="action danger" :disabled="busyId === vacancy.id" @click="askRemove(vacancy)">Excluir</button>
           </div>
         </li>
       </ul>
       <p v-else-if="!loading" class="empty">Você ainda não criou nenhuma vaga.</p>
     </section>
+
+    <ConfirmationDialog
+      v-model="removeDialogOpen"
+      title="Excluir rascunho"
+      confirm-text="Excluir"
+      danger
+      :loading="busyId === vacancyToRemove?.id"
+      @confirm="remove"
+    >
+      <p>Excluir o rascunho <strong>{{ vacancyToRemove?.title }}</strong>? Essa ação não pode ser desfeita.</p>
+    </ConfirmationDialog>
   </div>
 </template>
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import PlusIcon from '~icons/lucide/plus'
+import ConfirmationDialog from '../../components/dialogs/ConfirmationDialog.vue'
 import { apiFetch } from '../../services/api.js'
 import { STATUS_LABELS } from '../vagas/vacancy.js'
 
@@ -71,6 +83,8 @@ const vacancies = ref([])
 const loading = ref(true)
 const busyId = ref(null)
 const error = ref('')
+const removeDialogOpen = ref(false)
+const vacancyToRemove = ref(null)
 
 const openCount = computed(() => vacancies.value.filter((vacancy) => vacancy.status === 'open').length)
 const averageScore = computed(() => {
@@ -111,8 +125,13 @@ async function changeStatus(vacancy, status) {
   }
 }
 
-async function remove(vacancy) {
-  if (!window.confirm(`Excluir o rascunho "${vacancy.title}"?`)) return
+function askRemove(vacancy) {
+  vacancyToRemove.value = vacancy
+  removeDialogOpen.value = true
+}
+
+async function remove() {
+  const vacancy = vacancyToRemove.value
   error.value = ''
   busyId.value = vacancy.id
   try {
@@ -122,6 +141,8 @@ async function remove(vacancy) {
     error.value = requestError.message
   } finally {
     busyId.value = null
+    // Fecha também em caso de erro, para a mensagem aparecer na página.
+    removeDialogOpen.value = false
   }
 }
 

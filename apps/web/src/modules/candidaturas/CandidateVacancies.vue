@@ -83,7 +83,7 @@
             type="button"
             class="link-button"
             :disabled="withdrawingId === application.id"
-            @click="withdraw(application)"
+            @click="askWithdraw(application)"
           >Desistir</button>
           <button
             v-if="application.score_details"
@@ -103,11 +103,24 @@
       </ul>
       <p v-else-if="!loading" class="empty">Você ainda não se candidatou a nenhuma vaga.</p>
     </section>
+
+    <ConfirmationDialog
+      v-model="withdrawDialogOpen"
+      title="Desistir da candidatura"
+      confirm-text="Desistir"
+      cancel-text="Voltar"
+      danger
+      :loading="withdrawingId === applicationToWithdraw?.id"
+      @confirm="withdraw"
+    >
+      <p>Desistir da candidatura para <strong>{{ applicationToWithdraw?.vacancy.title }}</strong>?</p>
+    </ConfirmationDialog>
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref, watch } from 'vue'
+import ConfirmationDialog from '../../components/dialogs/ConfirmationDialog.vue'
 import { apiFetch } from '../../services/api.js'
 import { CRITERION_TYPE_LABELS, levelLabel } from '../vagas/vacancy.js'
 import CriteriaBreakdown from './CriteriaBreakdown.vue'
@@ -128,6 +141,8 @@ const consent = ref(false)
 const externalAnalysis = ref(false)
 const submitting = ref(false)
 const withdrawingId = ref(null)
+const withdrawDialogOpen = ref(false)
+const applicationToWithdraw = ref(null)
 const expandedId = ref(null)
 const compatibility = ref(null)
 const compatibilityError = ref('')
@@ -196,8 +211,13 @@ async function apply(vacancy) {
   }
 }
 
-async function withdraw(application) {
-  if (!window.confirm(`Desistir da candidatura para "${application.vacancy.title}"?`)) return
+function askWithdraw(application) {
+  applicationToWithdraw.value = application
+  withdrawDialogOpen.value = true
+}
+
+async function withdraw() {
+  const application = applicationToWithdraw.value
   error.value = ''
   withdrawingId.value = application.id
   try {
@@ -209,6 +229,8 @@ async function withdraw(application) {
     error.value = requestError.message
   } finally {
     withdrawingId.value = null
+    // Fecha também em caso de erro, para a mensagem aparecer na página.
+    withdrawDialogOpen.value = false
   }
 }
 
