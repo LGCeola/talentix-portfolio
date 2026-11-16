@@ -46,30 +46,49 @@ describe('VacancyFormPage: nova vaga', () => {
     expect(level.findAll('option')[2].text()).toContain('Graduação concluída')
   })
 
-  it('explica o que falta até os pesos somarem 100%', async () => {
+  it('explica o que falta até a vaga poder ser publicada', async () => {
     const wrapper = await render()
     await wrapper.find('#title').setValue('Dev Python')
     expect(wrapper.find('.blocker').text()).toBe('Informe a descrição da vaga para publicá-la.')
     await wrapper.find('#description').setValue('Backend')
     expect(wrapper.find('.blocker').text()).toContain('Cada requisito precisa de um nome')
     await wrapper.find('.criterion-row input[type="text"]').setValue('Python')
-    expect(wrapper.find('.blocker').text()).toBe('Os pesos somam 10%; ajuste para exatamente 100% para publicar.')
-    expect(wrapper.find('.total').classes()).toContain('under')
-
-    await wrapper.find('.weight-input input').setValue(100)
+    // O único requisito já começa com 100%.
     expect(wrapper.find('.blocker').exists()).toBe(false)
     expect(wrapper.find('.total').classes()).toContain('complete')
+
+    await wrapper.find('.weight-input input').setValue(60)
+    expect(wrapper.find('.blocker').text()).toBe('Os pesos somam 60%; ajuste para exatamente 100% para publicar.')
+    expect(wrapper.find('.total').classes()).toContain('under')
   })
 
-  it('adiciona e remove requisitos', async () => {
+  it('divide os pesos igualmente ao adicionar e remover requisitos', async () => {
     const wrapper = await render()
+    const weights = () => wrapper.findAll('.weight-input input').map((input) => input.element.value)
+    expect(weights()).toEqual(['100'])
+
     await buttonWithText(wrapper, 'Adicionar requisito').trigger('click')
-    expect(wrapper.findAll('.criterion-row')).toHaveLength(2)
-    // O novo requisito recebe o peso que falta para 100%.
-    expect(wrapper.findAll('.weight-input input')[1].element.value).toBe('90')
+    await buttonWithText(wrapper, 'Adicionar requisito').trigger('click')
+    expect(weights()).toEqual(['34', '33', '33'])
+
     await wrapper.findAll('.icon-button')[0].trigger('click')
-    expect(wrapper.findAll('.criterion-row')).toHaveLength(1)
-    expect(wrapper.find('.blocker').text()).toBe('Informe um título com pelo menos 3 caracteres.')
+    expect(weights()).toEqual(['50', '50'])
+  })
+
+  it('para de dividir quando o recrutador altera um peso, até ele pedir de novo', async () => {
+    const wrapper = await render()
+    const weights = () => wrapper.findAll('.weight-input input').map((input) => input.element.value)
+    await buttonWithText(wrapper, 'Adicionar requisito').trigger('click')
+
+    await wrapper.findAll('.weight-input input')[0].setValue(70)
+    expect(buttonWithText(wrapper, 'Dividir igualmente')).toBeDefined()
+    await buttonWithText(wrapper, 'Adicionar requisito').trigger('click')
+    // O novo requisito recebe o que falta para 100%, sem mexer nos pesos definidos.
+    expect(weights()).toEqual(['70', '50', '1'])
+
+    await buttonWithText(wrapper, 'Dividir igualmente').trigger('click')
+    expect(weights()).toEqual(['34', '33', '33'])
+    expect(buttonWithText(wrapper, 'Dividir igualmente')).toBeUndefined()
   })
 
   it('publica a vaga com nível exigido e volta ao dashboard', async () => {
@@ -127,6 +146,8 @@ describe('VacancyFormPage: edição', () => {
     expect(wrapper.find('.status-badge').text()).toBe('Publicada')
     expect(wrapper.findAll('.criterion-row select')[1].element.value).toBe('4')
     expect(buttonWithText(wrapper, 'Salvar rascunho')).toBeUndefined()
+    // Na edição, os pesos salvos não são redistribuídos sozinhos.
+    expect(wrapper.text()).toContain('Pesos definidos manualmente.')
 
     apiFetch.mockResolvedValueOnce({})
     await buttonWithText(wrapper, 'Salvar alterações').trigger('click')

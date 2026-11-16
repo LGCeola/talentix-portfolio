@@ -37,6 +37,23 @@ export function levelLabel(criterionType, level) {
   return (criterionType === 'formacao' ? EDUCATION_LEVELS : PRACTICE_LEVELS)[level] ?? ''
 }
 
+// Textos de um requisito da vaga, iguais para candidato e recrutador: o peso é a parte da nota, não o quanto precisa aparecer.
+export function weightText(criterion) {
+  return `vale ${criterion.weight}% da nota`
+}
+
+export function requiredLevelText(criterion) {
+  return `exige: ${levelLabel(criterion.criterion_type, criterion.required_level)}`
+}
+
+// Divide 100% em partes inteiras e iguais; a sobra vai, um ponto por vez, para os primeiros requisitos.
+export function evenWeights(count) {
+  if (count <= 0) return []
+  const base = Math.floor(100 / count)
+  const rest = 100 - base * count
+  return Array.from({ length: count }, (_, index) => base + (index < rest ? 1 : 0))
+}
+
 export function totalWeight(criteria) {
   return criteria.reduce((sum, criterion) => sum + (Number(criterion.weight) || 0), 0)
 }
