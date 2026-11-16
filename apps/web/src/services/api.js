@@ -26,6 +26,29 @@ function errorMessage(data, fallback) {
   return fallback
 }
 
+// Baixa um arquivo protegido pelo login, como o currículo original de um candidato.
+export async function apiDownload(path, filename) {
+  const token = localStorage.getItem(TOKEN_KEY)
+  const response = await fetch(path, { headers: token ? { Authorization: `Bearer ${token}` } : {} })
+
+  if (response.status === 401) {
+    clearSession()
+    router.push({ name: 'Login' })
+    throw new Error('Sua sessão expirou. Faça login novamente.')
+  }
+  if (!response.ok) {
+    const data = await response.json().catch(() => null)
+    throw new Error(errorMessage(data, 'Não foi possível baixar o arquivo.'))
+  }
+
+  const url = URL.createObjectURL(await response.blob())
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
 export async function apiFetch(path, options = {}) {
   const headers = { ...options.headers }
   const token = localStorage.getItem(TOKEN_KEY)

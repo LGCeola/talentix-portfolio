@@ -13,7 +13,9 @@ logger = logging.getLogger(__name__)
 
 ALGORITHM_VERSION = "3"
 # Abaixo desta confiança o nível estimado não pontua: o critério fica "a revisar".
-MIN_CONFIDENCE = 0.8
+# 0,7 foi escolhido com os currículos fictícios de evaluation/levels.json: com 0,8, a maioria das revisões
+# eram respostas certas. Deve ser revisto com currículos reais.
+MIN_CONFIDENCE = 0.7
 
 MODE_LEVELS = "levels"  # Nível estimado pelo Jev.
 MODE_KEYWORDS = "keywords"  # Só busca por termos: Jev desligado ou fora do ar.

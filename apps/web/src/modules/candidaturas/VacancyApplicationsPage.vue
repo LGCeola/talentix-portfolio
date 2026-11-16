@@ -46,7 +46,15 @@
                     <strong>{{ application.candidate.name }}</strong>
                     <span>{{ application.candidate.email }}</span>
                   </td>
-                  <td>{{ application.resume.original_filename }}</td>
+                  <td>
+                    <button
+                      type="button"
+                      class="resume-link"
+                      :disabled="downloadingId === application.id"
+                      :aria-label="`Baixar o currículo original de ${application.candidate.name}`"
+                      @click="downloadResume(application)"
+                    >{{ application.resume.original_filename }}</button>
+                  </td>
                   <td>{{ formatDate(application.applied_at) }}</td>
                   <td class="muted">{{ formatScore(application.overall_score) }}</td>
                   <td><span class="application-status" :class="application.status">{{ APPLICATION_STATUS_LABELS[application.status] }}</span></td>
@@ -71,7 +79,7 @@
                 </tr>
                 <tr v-if="expandedId === application.id">
                   <td colspan="8">
-                    <CriteriaBreakdown :criteria="application.score_details.criteria" :mode="application.score_details.analysis_mode" />
+                    <CriteriaBreakdown :criteria="application.score_details.criteria" :mode="application.score_details.analysis_mode" review-hint />
                   </td>
                 </tr>
               </template>
@@ -90,7 +98,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import AppLayout from '../../components/AppLayout.vue'
-import { apiFetch } from '../../services/api.js'
+import { apiDownload, apiFetch } from '../../services/api.js'
 import { CRITERION_TYPE_LABELS, STATUS_LABELS, levelLabel } from '../vagas/vacancy.js'
 import CriteriaBreakdown from './CriteriaBreakdown.vue'
 import { APPLICATION_STATUS_LABELS, formatScore } from './application.js'
@@ -102,6 +110,19 @@ const loading = ref(true)
 const error = ref('')
 const expandedId = ref(null)
 const decidingId = ref(null)
+const downloadingId = ref(null)
+
+async function downloadResume(application) {
+  error.value = ''
+  downloadingId.value = application.id
+  try {
+    await apiDownload(`/api/candidaturas/${application.id}/curriculo`, application.resume.original_filename)
+  } catch (requestError) {
+    error.value = requestError.message
+  } finally {
+    downloadingId.value = null
+  }
+}
 
 // Notas iguais dividem a mesma posição, para o ranking não sugerir uma diferença que não existe.
 function rankOf(index) {
@@ -148,6 +169,23 @@ function formatDate(value) {
 </script>
 
 <style scoped>
+.resume-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #2563eb;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.resume-link:disabled {
+  cursor: progress;
+  opacity: .6;
+}
+
 .applications-page {
   display: grid;
   gap: 20px;

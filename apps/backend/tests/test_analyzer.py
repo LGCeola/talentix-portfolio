@@ -117,10 +117,10 @@ def test_professor_example_junior_and_senior_differ():
 
 
 def test_low_confidence_goes_to_review():
-  analysis = analyze("Texto", CRITERIA, FakeDetector(5, confidence=0.79))
+  analysis = analyze("Texto", CRITERIA, FakeDetector(5, confidence=0.69))
   assert all(result.status == CriterionStatus.REVIEW for result in analysis.results)
   assert analysis.score == 0
-  assert analyze("Texto", CRITERIA, FakeDetector(5, confidence=0.8)).score == 100
+  assert analyze("Texto", CRITERIA, FakeDetector(5, confidence=0.7)).score == 100
 
 
 def test_level_zero_without_keyword_is_absent():

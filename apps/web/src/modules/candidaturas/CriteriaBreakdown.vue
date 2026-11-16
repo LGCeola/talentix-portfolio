@@ -9,6 +9,9 @@
           <span class="points">{{ formatPoints(criterion.points) }} de {{ criterion.weight }} pontos</span>
         </div>
         <p v-if="describeDetection(criterion)" class="detection">{{ describeDetection(criterion) }}</p>
+        <p v-if="reviewHint && criterion.status === 'review'" class="review-hint">
+          A revisar: confira no currículo original antes de decidir. Clique no nome do arquivo para baixá-lo.
+        </p>
         <p v-if="criterion.evidence" class="evidence">“{{ criterion.evidence }}”</p>
       </li>
     </ul>
@@ -30,6 +33,8 @@ defineProps({
   suggestions: { type: Array, default: () => [] },
   // "levels" ou "keywords"; nulo em análises antigas ou na simulação.
   mode: { type: String, default: null },
+  // Só na tela do recrutador, que pode abrir o currículo original.
+  reviewHint: { type: Boolean, default: false },
 })
 </script>
 
@@ -89,6 +94,13 @@ defineProps({
   border-radius: 8px;
   background: #fef9c3;
   color: #854d0e;
+  line-height: 1.4;
+}
+
+.review-hint {
+  margin: 4px 0 0;
+  color: #854d0e;
+  font-size: .78rem;
   line-height: 1.4;
 }
 
