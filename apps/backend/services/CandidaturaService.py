@@ -1,9 +1,11 @@
 from datetime import datetime, timezone
+from pathlib import Path
 
 from sqlalchemy.orm import Session
 
 from apps.backend.algorithm.analyzer import Analysis, SemanticDetector, analyze
 from apps.backend.algorithm.score_calculator import CriterionInput
+from apps.backend.core.config import settings
 from apps.backend.core.exceptions import CandidaturaNaoEncontrada, Conflito, CurriculoNaoEncontrado, VagaNaoEncontrada
 from apps.backend.integrations.jev import build_semantic_detector
 from apps.backend.models.candidatura import Application, ApplicationStatus
@@ -26,12 +28,14 @@ class CandidaturaService:
     curriculos: CurriculoRepository | None = None,
     vaga_service: VagaService | None = None,
     detector: SemanticDetector | None = None,
+    upload_dir: Path | None = None,
   ):
     self.repository = repository or CandidaturaRepository()
     self.vagas = vagas or VagaRepository()
     self.curriculos = curriculos or CurriculoRepository()
     self.vaga_service = vaga_service or VagaService()
     self.detector = detector if detector is not None else build_semantic_detector()
+    self.upload_dir = upload_dir or settings.UPLOAD_DIR
 
   def uses_external_analysis(self) -> bool:
     return self.detector is not None
@@ -63,7 +67,8 @@ class CandidaturaService:
     resume = self._get_resume(db, candidate, resume_id)
     # Sem detector externo: antes da candidatura não há consentimento para enviar o currículo a terceiros.
     analysis = self._analyze(vacancy, resume, None)
-    return CompatibilidadeResponse(score=analysis.score, criteria=analysis.to_details()["criteria"], suggestions=analysis.suggestions)
+    details = analysis.to_details()
+    return CompatibilidadeResponse(score=analysis.score, analysis_mode=details["analysis_mode"], criteria=details["criteria"], suggestions=analysis.suggestions)
 
   def list_mine(self, db: Session, candidate: User) -> list[Application]:
     return self.repository.list_by_candidate(db, candidate.id)
@@ -88,6 +93,18 @@ class CandidaturaService:
     application.status = new_status
     return self.repository.save(db, application)
 
+  def received_resume(self, db: Session, recruiter: User, application_id: int) -> tuple[Path, str]:
+    """Arquivo original do currículo, só para o recrutador da vaga a que a pessoa se candidatou (consentimento da candidatura)."""
+    application = self.repository.get_by_id_and_recruiter(db, application_id, recruiter.id)
+    if not application:
+      raise CandidaturaNaoEncontrada()
+    base = self.upload_dir.resolve()
+    path = (base / application.resume.file_url).resolve()
+    # file_url é gerado pelo servidor, mas a checagem impede ler fora da pasta de uploads.
+    if not path.is_relative_to(base) or not path.is_file():
+      raise CurriculoNaoEncontrado("O arquivo original deste currículo não foi encontrado")
+    return path, application.resume.original_filename
+
   def _get_resume(self, db: Session, candidate: User, resume_id: int) -> Resume:
     resume = self.curriculos.get_by_id_and_candidate(db, resume_id, candidate.id)
     if not resume:
@@ -96,7 +113,12 @@ class CandidaturaService:
 
   def _analyze(self, vacancy: Vacancy, resume: Resume, detector: SemanticDetector | None, private_terms: tuple[str, ...] = ()) -> Analysis:
     criteria = [
-      CriterionInput(name=criterion.name, criterion_type=criterion.criterion_type.value, weight=criterion.weight)
+      CriterionInput(
+        name=criterion.name,
+        criterion_type=criterion.criterion_type.value,
+        weight=criterion.weight,
+        required_level=criterion.required_level,
+      )
       for criterion in sorted(vacancy.criteria, key=lambda item: item.id)
     ]
     return analyze(resume.extracted_text, criteria, detector, private_terms)

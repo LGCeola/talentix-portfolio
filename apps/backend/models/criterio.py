@@ -16,7 +16,10 @@ class CriterionType(str, Enum):
 
 class Criterion(Base):
   __tablename__ = "criterios_vaga"
-  __table_args__ = (CheckConstraint("weight BETWEEN 1 AND 100", name="ck_criterios_vaga_weight_range"),)
+  __table_args__ = (
+    CheckConstraint("weight BETWEEN 1 AND 100", name="ck_criterios_vaga_weight_range"),
+    CheckConstraint("required_level BETWEEN 1 AND 5", name="ck_criterios_vaga_required_level_range"),
+  )
 
   id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
   vacancy_id: Mapped[int] = mapped_column(Integer, ForeignKey("vagas.id"), nullable=False, index=True)
@@ -24,5 +27,7 @@ class Criterion(Base):
   criterion_type: Mapped[CriterionType] = mapped_column(SQLEnum(CriterionType, name="tipo_criterio", values_callable=lambda enum: [member.value for member in enum]), nullable=False)
   # Percentual da nota final (1–100); os pesos de uma vaga publicada somam 100.
   weight: Mapped[int] = mapped_column(Integer, nullable=False)
+  # Nível que a vaga exige (1–5); abaixo dele o critério soma só parte do peso.
+  required_level: Mapped[int] = mapped_column(Integer, nullable=False, default=3, server_default="3")
 
   vacancy: Mapped["Vacancy"] = relationship(back_populates="criteria")

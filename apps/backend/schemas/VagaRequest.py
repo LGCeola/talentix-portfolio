@@ -11,6 +11,7 @@ class CriterioRequest(BaseModel):
   name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=50)]
   criterion_type: CriterionType
   weight: int = Field(ge=1, le=100, description="Percentual da nota final")
+  required_level: int = Field(default=3, ge=1, le=5, description="Nível exigido: de 1 (citado) a 5 (referência)")
 
 
 class VagaRequest(BaseModel):

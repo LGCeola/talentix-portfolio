@@ -11,6 +11,7 @@ class CriterioResponse(BaseModel):
   name: str
   criterion_type: CriterionType
   weight: int
+  required_level: int
 
   model_config = {"from_attributes": True}
 

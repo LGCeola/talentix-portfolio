@@ -41,21 +41,29 @@ class CriterioAnaliseResponse(BaseModel):
   criterion_type: CriterionType
   weight: int
   status: Literal["present", "absent", "review"]
-  points: int
+  points: float
   source: str
   evidence: str | None = None
+  # Versão 3 do algoritmo: nível exigido pela vaga e nível estimado pelo Jev (0 a 5).
+  required_level: int | None = None
+  level: int | None = None
+  confidence: float | None = None
+  # Versão 2: probabilidade de o critério estar presente. Mantida para candidaturas antigas.
   probability: float | None = None
   model_version: str | None = None
 
 
 class AnaliseDetalhesResponse(BaseModel):
   algorithm_version: str
+  # "levels" (nível estimado pelo Jev) ou "keywords" (só busca por termos); nulo em versões antigas.
+  analysis_mode: str | None = None
   criteria: list[CriterioAnaliseResponse]
 
 
 class CompatibilidadeResponse(BaseModel):
   """Simulação do candidato antes de se candidatar; nada é gravado nem compartilhado."""
   score: float
+  analysis_mode: str
   criteria: list[CriterioAnaliseResponse]
   suggestions: list[str]
 

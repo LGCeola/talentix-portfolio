@@ -35,7 +35,7 @@
                 type="button"
                 @click="selectedType = 'candidate'"
               >
-                <span class="type-icon">🎯</span>
+                <TargetIcon class="type-icon" aria-hidden="true" />
                 <strong>Candidato</strong>
                 <span>Envie seu currículo e descubra seus pontos fortes.</span>
               </button>
@@ -46,7 +46,7 @@
                 type="button"
                 @click="selectedType = 'recruiter'"
               >
-                <span class="type-icon">🏢</span>
+                <Building2Icon class="type-icon" aria-hidden="true" />
                 <strong>Recrutador</strong>
                 <span>Crie vagas e encontre os melhores candidatos.</span>
               </button>
@@ -156,8 +156,10 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import Building2Icon from '~icons/lucide/building-2'
 import EyeIcon from '~icons/lucide/eye'
 import EyeOffIcon from '~icons/lucide/eye-off'
+import TargetIcon from '~icons/lucide/target'
 
 const router = useRouter()
 

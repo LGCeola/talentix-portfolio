@@ -287,6 +287,18 @@ input:focus {
   border: 1px solid #bbf7d0;
 }
 
+/* Mensagem com ícone: ícone à esquerda, centralizado com o texto. */
+.form-success:has(> svg) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.form-success svg {
+  flex-shrink: 0;
+  font-size: 1.1em;
+}
+
 .signup,
 .login-link {
   margin: 24px 0 0;
@@ -315,7 +327,10 @@ input:focus {
   cursor: pointer;
   text-align: left;
   display: grid;
-  gap: 4px;
+  /* Coluna do ícone + coluna do texto (título e descrição). */
+  grid-template-columns: auto 1fr;
+  column-gap: 16px;
+  row-gap: 4px;
   transition: border-color .15s, box-shadow .15s, background .15s;
 }
 
@@ -330,10 +345,12 @@ input:focus {
   box-shadow: 0 0 0 3px #dbeafe;
 }
 
+/* Ocupa as duas linhas (título e descrição) e fica no meio delas. */
 .type-icon {
-  font-size: 1.5rem;
-  display: block;
-  margin-bottom: 4px;
+  grid-row: span 2;
+  align-self: center;
+  font-size: 1.75rem;
+  color: #2563eb;
 }
 
 .type-card strong {

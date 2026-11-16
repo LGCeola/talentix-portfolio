@@ -23,7 +23,8 @@
         </header>
 
         <p v-if="registeredSuccess" class="form-success" role="status">
-          ✅ Conta criada com sucesso! Faça login para continuar.
+          <CircleCheckIcon aria-hidden="true" />
+          Conta criada com sucesso! Faça login para continuar.
         </p>
 
         <form @submit.prevent="login" novalidate>
@@ -58,6 +59,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import CircleCheckIcon from '~icons/lucide/circle-check'
 import EyeIcon from '~icons/lucide/eye'
 import EyeOffIcon from '~icons/lucide/eye-off'
 
