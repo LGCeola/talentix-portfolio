@@ -17,3 +17,7 @@
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Cobertura de testes
+.coverage
+htmlcov/

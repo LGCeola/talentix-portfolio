@@ -34,9 +34,9 @@ O Talentix resolve esse desafio por meio de um **algoritmo próprio de pontuaç�
 
 - **Backend:** Python, [FastAPI](https://fastapi.tiangolo.com/), SQLAlchemy, Pydantic
 - **Frontend:** [Vue.js](https://vuejs.org/) (Single Page Application)
-- **Processamento & Algoritmo:** Engine própria em Python para extração, parsing e pontuação determinística
+- **Processamento & Algoritmo:** Engine própria em Python para extração, busca por termos e cálculo da nota, com apoio do Jev (TypeSafe) para estimar o nível de cada critério
 - **Banco de Dados:** PostgreSQL (com suporte a JSONB para detalhamento dinâmico de pontuações)
-- **Cache & Sessão:** Redis
+- **Autenticação:** JWT, sem sessão no servidor
 
 ---
 

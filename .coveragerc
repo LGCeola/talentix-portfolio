@@ -1,0 +1,19 @@
+# Cobertura dos testes do backend. Rodar a partir da raiz do repositório:
+#   python -m pytest apps/backend/tests --cov
+[run]
+source = apps/backend
+omit =
+    # Os próprios testes não contam como código coberto.
+    apps/backend/tests/*
+    # Migrações são executadas pelo Alembic para criar o banco, não fazem parte da lógica da aplicação.
+    apps/backend/migrations/*
+    # Script de avaliação manual: faz chamadas reais e pagas ao Jev, então não roda nos testes.
+    apps/backend/evaluation/*
+
+[report]
+# O backend não tem __init__.py: sem isto, arquivos nunca importados ficariam fora da conta.
+include_namespace_packages = True
+show_missing = True
+skip_covered = True
+# Meta da disciplina para o backend.
+fail_under = 75

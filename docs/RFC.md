@@ -349,8 +349,8 @@ A escolha das tecnologias foca em alta performance para análise síncrona e ass
   - *Justificativa:* Baixo custo e capacidade de reconhecer sinônimos e negações que a busca por termos não identifica. Como as respostas podem variar entre execuções, a nota é gravada no momento da candidatura.
 - **Banco de Dados Principal:** PostgreSQL.
   - *Justificativa:* Banco relacional robusto, ideal para consistência de dados (RNF07), além de possuir excelente suporte nativo ao tipo de dado JSONB para salvar detalhes das pontuações mutáveis de forma performática.
-- **Mecanismo de Cache:** Redis.
-  - *Justificativa:* Essencial para guardar em memória temporária as sessões de usuários simultâneos (RNF02) e os resultados de relatórios de vagas já calculados, aliviando o banco de dados principal.
+- **Cache:** não utilizado.
+  - *Justificativa:* As sessões são dispensadas pelo uso de JWT, em que o servidor só confere a assinatura do token, e as notas são calculadas uma vez, na candidatura, e gravadas no PostgreSQL, o que já evita recálculos. Um cache como o Redis só seria adotado se medições de desempenho mostrassem necessidade.
 
 ---
 
