@@ -11,14 +11,15 @@
           <p class="description">{{ vacancy.description }}</p>
 
           <div class="criteria" aria-label="Critérios de avaliação">
-            <span class="criteria-label">Como você será avaliado:</span>
+            <span class="criteria-label">O que a vaga avalia:</span>
+            <p class="criteria-hint">Cada requisito vale uma parte da nota. Atender ao nível exigido garante os pontos inteiros.</p>
             <ul>
               <li
                 v-for="criterion in vacancy.criteria"
                 :key="criterion.id"
-                :title="`${CRITERION_TYPE_LABELS[criterion.criterion_type]} · nível exigido: ${levelLabel(criterion.criterion_type, criterion.required_level)}`"
+                :title="CRITERION_TYPE_LABELS[criterion.criterion_type]"
               >
-                {{ criterion.name }} <strong>{{ criterion.weight }}%</strong> <span class="level">· nível {{ criterion.required_level }}</span>
+                <strong>{{ criterion.name }}</strong> · {{ weightText(criterion) }} · {{ requiredLevelText(criterion) }}
               </li>
             </ul>
           </div>
@@ -122,7 +123,7 @@
 import { onMounted, ref, watch } from 'vue'
 import ConfirmationDialog from '../../components/dialogs/ConfirmationDialog.vue'
 import { apiFetch } from '../../services/api.js'
-import { CRITERION_TYPE_LABELS, levelLabel } from '../vagas/vacancy.js'
+import { CRITERION_TYPE_LABELS, requiredLevelText, weightText } from '../vagas/vacancy.js'
 import CriteriaBreakdown from './CriteriaBreakdown.vue'
 import { APPLICATION_STATUS_LABELS, formatScore, splitSuggestions } from './application.js'
 
@@ -288,9 +289,16 @@ h2 {
   white-space: pre-line;
 }
 
+.criteria-hint {
+  margin: 0 0 8px;
+  color: #64748b;
+  font-size: .78rem;
+  line-height: 1.4;
+}
+
 .criteria-label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
   color: #64748b;
   font-size: .78rem;
   font-weight: 600;

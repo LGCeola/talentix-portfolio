@@ -113,7 +113,9 @@ Regras:
 
 ## Análise de currículos
 
-Código em `algorithm/`, sem dependência de HTTP ou banco. Testes: `python -m pytest apps/backend/tests`, a partir da raiz.
+Código em `algorithm/`, sem dependência de HTTP ou banco. Testes: `python -m pytest apps/backend/tests`, a partir da raiz. Os testes de API (`test_api_*.py`) usam o PostgreSQL do `.env` dentro de uma transação desfeita ao final de cada teste, gravam arquivos numa pasta temporária e nunca chamam o Jev real. Sem banco disponível, eles são pulados.
+
+**Cobertura:** `python -m pytest apps/backend/tests --cov`, a partir da raiz, usa o `.coveragerc` e falha abaixo de 75%. Ficam fora da conta os testes, as migrações (executadas pelo Alembic) e o script de `evaluation/`, que chama o Jev real. No frontend, `pnpm test:coverage` em `apps/web` faz o mesmo com Vitest e falha abaixo de 25% das linhas.
 
 - **Nota:** cada critério vale `peso × mínimo(nível ÷ nível exigido, 1)`, e a soma vai de 0 a 100. Acima do nível exigido não há pontos extras. Critérios ausentes ou a revisar não pontuam.
 - **Níveis:** 0 = não encontrado; 1 = citado; 2 = estudou (curso ou disciplina); 3 = aplicou em projeto; 4 = uso profissional; 5 = referência (liderou, ensinou ou foi responsável técnico). Para formação: 1 = curso livre ou técnico (ou graduação trancada); 2 = graduação em andamento; 3 = concluída; 4 = pós-graduação; 5 = mestrado ou doutorado.

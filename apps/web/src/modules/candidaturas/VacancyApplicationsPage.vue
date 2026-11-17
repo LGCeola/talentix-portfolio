@@ -12,7 +12,7 @@
         </header>
         <ul class="criteria" aria-label="Critérios de avaliação">
           <li v-for="criterion in vacancy.criteria" :key="criterion.id">
-            {{ criterion.name }} <span>({{ CRITERION_TYPE_LABELS[criterion.criterion_type] }} · nível {{ criterion.required_level }}: {{ levelLabel(criterion.criterion_type, criterion.required_level) }})</span> <strong>{{ criterion.weight }}%</strong>
+            <strong>{{ criterion.name }}</strong> <span>({{ CRITERION_TYPE_LABELS[criterion.criterion_type] }})</span> · {{ weightText(criterion) }} · {{ requiredLevelText(criterion) }}
           </li>
         </ul>
       </section>
@@ -99,7 +99,7 @@ import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import AppLayout from '../../components/AppLayout.vue'
 import { apiDownload, apiFetch } from '../../services/api.js'
-import { CRITERION_TYPE_LABELS, STATUS_LABELS, levelLabel } from '../vagas/vacancy.js'
+import { CRITERION_TYPE_LABELS, STATUS_LABELS, requiredLevelText, weightText } from '../vagas/vacancy.js'
 import CriteriaBreakdown from './CriteriaBreakdown.vue'
 import { APPLICATION_STATUS_LABELS, formatScore } from './application.js'
 

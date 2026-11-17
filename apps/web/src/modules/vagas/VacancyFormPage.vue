@@ -21,6 +21,12 @@
             Cada requisito vale uma parte da nota final do candidato e tem um nível exigido. Quem está abaixo do nível recebe parte do peso;
             acima dele, não ganha pontos extras. Para publicar, os pesos precisam somar 100%.
           </p>
+          <p class="hint">
+            {{ autoWeights
+              ? 'Os pesos são divididos igualmente entre os requisitos. Altere um peso para definir os valores você mesmo.'
+              : 'Pesos definidos manualmente.' }}
+            <button v-if="!autoWeights && criteria.length" type="button" class="link-button" @click="useEvenWeights">Dividir igualmente</button>
+          </p>
 
           <div v-for="(criterion, index) in criteria" :key="criterion.key" class="criterion-row">
             <input
@@ -45,6 +51,7 @@
                 min="1"
                 max="100"
                 :aria-label="`Peso do requisito ${index + 1} em porcentagem`"
+                @input="autoWeights = false"
               />
               <span>%</span>
             </div>
@@ -89,7 +96,7 @@ import PlusIcon from '~icons/lucide/plus'
 import TrashIcon from '~icons/lucide/trash-2'
 import AppLayout from '../../components/AppLayout.vue'
 import { apiFetch } from '../../services/api.js'
-import { CRITERION_TYPES, DEFAULT_REQUIRED_LEVEL, REQUIRED_LEVELS, STATUS_LABELS, levelLabel, totalWeight } from './vacancy.js'
+import { CRITERION_TYPES, DEFAULT_REQUIRED_LEVEL, REQUIRED_LEVELS, STATUS_LABELS, evenWeights, levelLabel, totalWeight } from './vacancy.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -104,6 +111,8 @@ const currentStatus = ref(null)
 const loading = ref(isEdit)
 const saving = ref(false)
 const error = ref('')
+// Na vaga nova, os pesos se dividem sozinhos até o recrutador alterar algum; na edição, valem os salvos.
+const autoWeights = ref(!isEdit)
 
 let nextKey = 0
 function newCriterion(data = {}) {
@@ -133,6 +142,7 @@ const canPublish = computed(() => !publishBlocker.value)
 onMounted(async () => {
   if (!isEdit) {
     criteria.value = [newCriterion()]
+    distributeWeights()
     return
   }
   try {
@@ -149,12 +159,25 @@ onMounted(async () => {
   }
 })
 
+function distributeWeights() {
+  evenWeights(criteria.value.length).forEach((weight, index) => {
+    criteria.value[index].weight = weight
+  })
+}
+
+function useEvenWeights() {
+  autoWeights.value = true
+  distributeWeights()
+}
+
 function addCriterion() {
   criteria.value.push(newCriterion({ weight: Math.max(1, Math.min(100 - total.value, 100)) }))
+  if (autoWeights.value) distributeWeights()
 }
 
 function removeCriterion(index) {
   criteria.value.splice(index, 1)
+  if (autoWeights.value) distributeWeights()
 }
 
 async function save(status) {
@@ -282,6 +305,17 @@ select:focus {
 .icon-button:hover {
   background: #fef3f2;
   color: #b42318;
+}
+
+.link-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #2563eb;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .add-button {
