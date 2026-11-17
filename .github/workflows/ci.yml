@@ -1,0 +1,111 @@
+# Integração contínua: roda os testes e confere as metas de cobertura a cada push e pull request.
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# Um push novo na mesma branch cancela a execução anterior, que ficou desatualizada.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (pytest, cobertura ≥ 75%)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: talentix
+          POSTGRES_PASSWORD: talentix
+          POSTGRES_DB: talentix_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U talentix"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # Só valores de teste: o banco existe apenas durante a execução, e o Jev fica desligado.
+    env:
+      DATABASE_URL: postgresql+psycopg2://talentix:talentix@localhost:5432/talentix_test
+      JWT_SECRET_KEY: chave-usada-apenas-nos-testes-do-ci-0123456789
+      JEV_ENABLED: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: apps/backend/requirements.txt
+
+      - name: Instalar dependências
+        run: pip install -r apps/backend/requirements.txt
+
+      - name: Criar o banco a partir das migrações
+        working-directory: apps/backend
+        run: python -m alembic upgrade head
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Testes com cobertura
+        run: python -m pytest apps/backend/tests --cov --cov-report=term --cov-report=xml
+
+      - name: Guardar relatório de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-backend
+          path: coverage.xml
+          if-no-files-found: ignore
+
+  frontend:
+    name: Frontend (Vitest, cobertura ≥ 25%, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Usa a versão do pnpm definida em apps/web/package.json (packageManager).
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: apps/web/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Testes com cobertura
+        run: pnpm test:coverage
+
+      - name: Build
+        run: pnpm build
+
+      - name: Guardar relatório de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-frontend
+          path: apps/web/coverage
+          if-no-files-found: ignore
