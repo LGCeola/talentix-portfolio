@@ -26,8 +26,9 @@ jobs:
         image: postgres:18
         env:
           POSTGRES_USER: talentix
-          POSTGRES_PASSWORD: talentix
           POSTGRES_DB: talentix_test
+          # Banco descartável, acessível só dentro do runner: dispensa senha, que não fica escrita no código.
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 5432:5432
         options: >-
@@ -38,7 +39,7 @@ jobs:
 
     # Só valores de teste: o banco existe apenas durante a execução, e o Jev fica desligado.
     env:
-      DATABASE_URL: postgresql+psycopg2://talentix:talentix@localhost:5432/talentix_test
+      DATABASE_URL: postgresql+psycopg2://talentix@localhost:5432/talentix_test
       JWT_SECRET_KEY: chave-usada-apenas-nos-testes-do-ci-0123456789
       JEV_ENABLED: "false"
 
@@ -51,8 +52,10 @@ jobs:
           cache: pip
           cache-dependency-path: apps/backend/requirements.txt
 
+      # Só pacotes já compilados (sem rodar scripts de instalação) e conferidos pelos hashes do requirements.txt.
       - name: Instalar dependências
-        run: pip install -r apps/backend/requirements.txt
+        run: |
+          pip install --require-hashes --only-binary :all: -r apps/backend/requirements.txt
 
       - name: Criar o banco a partir das migrações
         working-directory: apps/backend
@@ -83,7 +86,8 @@ jobs:
       - uses: actions/checkout@v7
 
       # Usa a versão do pnpm definida em apps/web/package.json (packageManager).
-      - uses: pnpm/action-setup@v6
+      # Ações de terceiros ficam fixadas pelo commit, que não pode ser trocado como uma tag.
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           package_json_file: apps/web/package.json
 
@@ -137,6 +141,6 @@ jobs:
         run: sed -i 's#^SF:src/#SF:apps/web/src/#' apps/web/coverage/lcov.info
 
       - name: Análise no SonarQube Cloud
-        uses: SonarSource/sonarqube-scan-action@v8
+        uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8.4.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

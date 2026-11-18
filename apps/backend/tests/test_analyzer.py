@@ -80,7 +80,9 @@ def test_detector_failure_falls_back_to_keywords():
 
 def test_same_input_gives_same_result():
   text = "Dev Python com APIs REST"
-  assert analyze(text, CRITERIA) == analyze(text, CRITERIA)
+  first = analyze(text, CRITERIA)
+  second = analyze(text, CRITERIA)
+  assert first == second
 
 
 # Com detector: nível estimado, pontos proporcionais até o nível exigido.

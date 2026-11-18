@@ -90,7 +90,9 @@ def test_same_input_gives_same_result(api):
   vacancy = api.vacancy(recruiter, CRITERIA)
   resume = api.resume(candidate, FULL)
   path = f"/vagas/{vacancy}/compatibilidade?resume_id={resume}"
-  assert api.request("GET", path, candidate).json() == api.request("GET", path, candidate).json()
+  first = api.request("GET", path, candidate).json()
+  second = api.request("GET", path, candidate).json()
+  assert first == second
 
 
 def test_required_level_is_saved_validated_and_public(api):
