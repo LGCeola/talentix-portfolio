@@ -76,16 +76,16 @@ async function loadResumes() {
   }
 }
 
-function onSelect(event) {
+async function onSelect(event) {
   const [file] = event.target.files
   event.target.value = ''
-  if (file) upload(file)
+  if (file) await upload(file)
 }
 
-function onDrop(event) {
+async function onDrop(event) {
   dragging.value = false
   const [file] = event.dataTransfer.files
-  if (file && !uploading.value) upload(file)
+  if (file && !uploading.value) await upload(file)
 }
 
 async function upload(file) {

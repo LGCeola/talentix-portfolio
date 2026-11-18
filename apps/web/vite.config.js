@@ -23,7 +23,8 @@ export default defineConfig({
       // Mede todo o código-fonte, inclusive arquivos sem teste, para a porcentagem não ficar inflada.
       include: ['src/**/*.{js,vue}'],
       exclude: ['src/**/*.spec.js', 'src/main.js'],
-      reporter: ['text', 'html'],
+      // lcov é o formato que o SonarQube Cloud lê para mostrar a cobertura do frontend.
+      reporter: ['text', 'html', 'lcov'],
       // Meta da disciplina para o frontend: abaixo disso, o comando falha.
       thresholds: { lines: 25, statements: 25 },
     },

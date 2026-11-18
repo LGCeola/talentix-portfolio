@@ -21,3 +21,4 @@ desktop.ini
 # Cobertura de testes
 .coverage
 htmlcov/
+coverage.xml

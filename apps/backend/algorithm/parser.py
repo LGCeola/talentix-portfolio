@@ -32,7 +32,8 @@ def extract_text(content: bytes, extension: str) -> str:
 def normalize_text(text: str) -> str:
   text = text.replace("\r\n", "\n").replace("\r", "\n").replace("\x00", "")
   text = re.sub(r"[ \t\f\v]+", " ", text)
-  text = re.sub(r" *\n *", "\n", text)
+  # A linha anterior já reduziu os espaços a um só; " ?" evita uma regex lenta com textos maliciosos.
+  text = re.sub(r" ?\n ?", "\n", text)
   text = re.sub(r"\n{3,}", "\n\n", text)
   return text.strip()
 
