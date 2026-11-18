@@ -117,6 +117,8 @@ Código em `algorithm/`, sem dependência de HTTP ou banco. Testes: `python -m p
 
 **Cobertura:** `python -m pytest apps/backend/tests --cov`, a partir da raiz, usa o `.coveragerc` e falha abaixo de 75%. Ficam fora da conta os testes, as migrações (executadas pelo Alembic) e o script de `evaluation/`, que chama o Jev real. No frontend, `pnpm test:coverage` em `apps/web` faz o mesmo com Vitest e falha abaixo de 25% das linhas. O GitHub Actions (`.github/workflows/ci.yml`) roda os dois a cada push e pull request em `main` e `develop`, com um PostgreSQL criado do zero pelas migrações, e também faz o build do frontend.
 
+**Análise estática:** com os testes aprovados, o job `sonarqube` envia o código e os dois relatórios de cobertura ao [SonarQube Cloud](https://sonarcloud.io/project/overview?id=LGCeola_talentix-portfolio), que aponta bugs, vulnerabilidades, código duplicado e problemas de manutenção. A configuração fica em `sonar-project.properties`, na raiz, e o token de acesso no secret `SONAR_TOKEN` do repositório.
+
 - **Nota:** cada critério vale `peso × mínimo(nível ÷ nível exigido, 1)`, e a soma vai de 0 a 100. Acima do nível exigido não há pontos extras. Critérios ausentes ou a revisar não pontuam.
 - **Níveis:** 0 = não encontrado; 1 = citado; 2 = estudou (curso ou disciplina); 3 = aplicou em projeto; 4 = uso profissional; 5 = referência (liderou, ensinou ou foi responsável técnico). Para formação: 1 = curso livre ou técnico (ou graduação trancada); 2 = graduação em andamento; 3 = concluída; 4 = pós-graduação; 5 = mestrado ou doutorado.
 - **Busca (`keyword_matcher.py`):** procura o nome do critério no texto, ignorando caixa e acentos, e guarda o trecho como evidência. É sempre determinística.

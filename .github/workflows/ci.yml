@@ -43,9 +43,9 @@ jobs:
       JEV_ENABLED: "false"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.14"
           cache: pip
@@ -65,7 +65,7 @@ jobs:
 
       - name: Guardar relatório de cobertura
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cobertura-backend
           path: coverage.xml
@@ -80,14 +80,14 @@ jobs:
         working-directory: apps/web
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # Usa a versão do pnpm definida em apps/web/package.json (packageManager).
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           package_json_file: apps/web/package.json
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: pnpm
@@ -104,8 +104,39 @@ jobs:
 
       - name: Guardar relatório de cobertura
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cobertura-frontend
           path: apps/web/coverage
           if-no-files-found: ignore
+
+  # Análise estática e de segurança, com a cobertura medida nos dois jobs acima.
+  sonarqube:
+    name: Qualidade (SonarQube Cloud)
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # Histórico completo: o Sonar usa os commits para saber qual código é novo.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: cobertura-backend
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: cobertura-frontend
+          path: apps/web/coverage
+
+      # O Vitest grava caminhos relativos a apps/web; o Sonar os procura a partir da raiz do repositório.
+      - name: Ajustar caminhos da cobertura do frontend
+        run: sed -i 's#^SF:src/#SF:apps/web/src/#' apps/web/coverage/lcov.info
+
+      - name: Análise no SonarQube Cloud
+        uses: SonarSource/sonarqube-scan-action@v8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
