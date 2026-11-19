@@ -16,6 +16,7 @@ from apps.backend.api import curriculos as curriculos_api
 from apps.backend.api import usuarios as usuarios_api
 from apps.backend.api import vagas as vagas_api
 from apps.backend.database.connection import engine, get_db
+from apps.backend.integrations.storage import LocalStorage
 from apps.backend.main import app
 
 PASSWORD = "senha-teste-123"
@@ -82,7 +83,7 @@ def connection():
 @pytest.fixture
 def uploads(tmp_path, monkeypatch):
   for service in (curriculos_api.service, candidaturas_api.service, usuarios_api.service, vagas_api.candidaturas):
-    monkeypatch.setattr(service, "upload_dir", tmp_path)
+    monkeypatch.setattr(service, "storage", LocalStorage(tmp_path))
   return tmp_path
 
 

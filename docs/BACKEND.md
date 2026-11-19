@@ -20,6 +20,8 @@ Todos os comandos partem da **raiz do repositório** (`talentix-portfolio/`).
 
 Envie o token retornado pelo login no header `Authorization: Bearer <token>` para as rotas protegidas.
 
+`GET /api/health` é pública e responde `200` com `{"status": "ok"}` quando a API e o banco estão no ar, ou `503` se o banco estiver fora. A Azure a usa para saber se o contêiner pode receber tráfego.
+
 ## Autenticação
 
 | Método | Rota | Finalidade |
@@ -62,7 +64,7 @@ Exemplo de cadastro:
 | `GET` | `/api/curriculos/{id}` | Detalhe de um currículo próprio, incluindo o texto extraído. |
 | `DELETE` | `/api/curriculos/{id}` | Exclui o currículo e o arquivo (bloqueado se houver candidaturas vinculadas). |
 
-Os arquivos são gravados em `UPLOAD_DIR` (padrão `apps/backend/uploads/`, fora do git) com nome gerado pelo servidor. Recrutadores recebem `403`; um candidato que tenta acessar o currículo de outro recebe `404`.
+Os arquivos recebem um nome gerado pelo servidor (`<id do candidato>/<uuid>.pdf`) e são gravados por `integrations/storage.py`: localmente, em `UPLOAD_DIR` (padrão `apps/backend/uploads/`, fora do git); na Azure, quando `AZURE_STORAGE_ACCOUNT_URL` está configurada, no Blob Storage, acessado pela identidade gerenciada do contêiner, sem senha na aplicação. Recrutadores recebem `403`; um candidato que tenta acessar o currículo de outro recebe `404`.
 
 ## Vagas
 
@@ -158,3 +160,17 @@ Uma requisição percorre `api → services → repositories → models`:
 - `models/`: entidades SQLAlchemy (tabelas).
 - `core/`: configuração, segurança, dependências e exceções.
 - `algorithm/`: análise determinística do currículo, sem depender do HTTP.
+- `integrations/`: serviços externos — o Jev (`jev.py`) e o armazenamento dos arquivos (`storage.py`).
+
+## Produção: Docker e monitoramento
+
+**Imagens:** `apps/backend/Dockerfile` (API) e `apps/web/Dockerfile` (Vue compilado, servido pelo Nginx, que repassa `/api` para a API pelo endereço em `API_URL`). As duas rodam sem usuário root. Ao iniciar, a API aplica as migrações pendentes e sobe o Uvicorn. Arquivos `.env`, currículos, testes e scripts de avaliação ficam fora das imagens (`.dockerignore`).
+
+```powershell
+docker build -f apps/backend/Dockerfile -t talentix-api .
+docker build -t talentix-web apps/web
+```
+
+O CI constrói as duas imagens e faz um teste de fumaça: sobe a API e o frontend com um PostgreSQL vazio e confere a tela e o `/api/health` pelo Nginx.
+
+**Monitoramento:** com `APPLICATIONINSIGHTS_CONNECTION_STRING` configurada, `core/monitoring.py` liga o Azure Monitor (OpenTelemetry) e envia ao Application Insights as requisições (rota, status, duração), exceções, consultas ao PostgreSQL, chamadas externas e os logs de `apps.backend`, identificados pelo ambiente (`ENVIRONMENT`). O `/api/health` fica de fora, para não gerar ruído. Sem a variável, como localmente e nos testes, nada é enviado. Os dados descrevem as requisições, não o conteúdo dos currículos.

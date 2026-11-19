@@ -23,6 +23,15 @@ class Settings(BaseSettings):
   UPLOAD_DIR: Path = _BACKEND_DIR / "uploads"
   MAX_RESUME_SIZE_MB: int = 5
 
+  # Produção (Azure): com a URL da conta de armazenamento, os currículos vão para o Blob Storage em vez de UPLOAD_DIR.
+  AZURE_STORAGE_ACCOUNT_URL: str | None = None
+  AZURE_STORAGE_CONTAINER: str = "curriculos"
+
+  # Produção (Azure): com a connection string, requisições, erros, consultas ao banco e logs vão para o Application Insights.
+  APPLICATIONINSIGHTS_CONNECTION_STRING: str | None = None
+  # Nome do ambiente (dev, prod) nos dados de monitoramento.
+  ENVIRONMENT: str = "local"
+
   # Desligado por padrão: ligar envia currículos anonimizados à TypeSafe, nos EUA, e exige consentimento específico.
   JEV_ENABLED: bool = False
   JEV_SECRET_KEY: SecretStr | None = None

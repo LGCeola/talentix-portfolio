@@ -1,0 +1,19 @@
+# Contexto da imagem da API (raiz do repositório): só o código do backend entra na imagem.
+**/.git
+**/node_modules
+apps/web
+
+# Segredos locais e dados pessoais nunca entram na imagem.
+**/.env
+**/.env.*
+apps/backend/uploads
+
+# Testes, scripts de avaliação e caches não são necessários em produção.
+apps/backend/tests
+apps/backend/evaluation
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+.coverage
+coverage.xml
+htmlcov

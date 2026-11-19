@@ -7,15 +7,16 @@ from sqlalchemy.orm import Session
 from apps.backend.algorithm.parser import SUPPORTED_EXTENSIONS, ResumeParseError, extract_text
 from apps.backend.core.config import settings
 from apps.backend.core.exceptions import ArquivoMuitoGrande, Conflito, CurriculoInvalido, CurriculoNaoEncontrado, FormatoNaoSuportado
+from apps.backend.integrations.storage import ResumeStorage, get_storage
 from apps.backend.models.curriculo import Resume
 from apps.backend.models.usuario import User
 from apps.backend.repositories.CurriculoRepository import CurriculoRepository
 
 
 class CurriculoService:
-  def __init__(self, repository: CurriculoRepository | None = None, upload_dir: Path | None = None):
+  def __init__(self, repository: CurriculoRepository | None = None, storage: ResumeStorage | None = None):
     self.repository = repository or CurriculoRepository()
-    self.upload_dir = upload_dir or settings.UPLOAD_DIR
+    self.storage = storage or get_storage()
 
   def list_mine(self, db: Session, candidate: User) -> list[Resume]:
     return self.repository.list_by_candidate(db, candidate.id)
@@ -44,17 +45,15 @@ class CurriculoService:
     except ResumeParseError as error:
       raise CurriculoInvalido(str(error)) from error
 
-    # O nome em disco é gerado pelo servidor; o nome original serve apenas para exibição.
-    relative_path = Path(str(candidate.id)) / f"{uuid4().hex}{extension}"
-    destination = self.upload_dir / relative_path
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    destination.write_bytes(content)
+    # O nome do arquivo é gerado pelo servidor; o nome original serve apenas para exibição.
+    key = f"{candidate.id}/{uuid4().hex}{extension}"
+    self.storage.save(key, content)
 
-    resume = Resume(candidate_id=candidate.id, file_url=relative_path.as_posix(), original_filename=original_filename[:255], extracted_text=text)
+    resume = Resume(candidate_id=candidate.id, file_url=key, original_filename=original_filename[:255], extracted_text=text)
     try:
       return self.repository.create(db, resume)
     except Exception:
-      destination.unlink(missing_ok=True)
+      self.storage.delete(key)
       raise
 
   def delete(self, db: Session, candidate: User, resume_id: int) -> None:
@@ -62,6 +61,6 @@ class CurriculoService:
     if self.repository.has_applications(db, resume.id):
       raise Conflito("Este currículo está vinculado a candidaturas e não pode ser excluído")
 
-    file_path = self.upload_dir / resume.file_url
+    key = resume.file_url
     self.repository.delete(db, resume)
-    file_path.unlink(missing_ok=True)
+    self.storage.delete(key)
