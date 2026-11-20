@@ -200,3 +200,16 @@ jobs:
         run: |
           docker logs api
           docker logs web
+
+  # Entrega contínua: só em push (develop → dev, main → prod) e só se todos os jobs acima passarem.
+  deploy:
+    name: Deploy (${{ github.ref_name == 'main' && 'prod' || 'dev' }})
+    needs: [backend, frontend, sonarqube, docker]
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
