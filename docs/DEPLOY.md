@@ -28,7 +28,7 @@ Navegador ──HTTPS──▶ talentix-web-<env>  (Nginx + Vue, público)
 - **Sem senhas no repositório.** O GitHub entra na Azure por OIDC: a identidade `id-talentix-github` só aceita tokens deste repositório, nos ambientes `dev` e `prod`, e só pode alterar os grupos `rg-talentix-dev` e `rg-talentix-prod`.
 - **Segredos** (URL do banco, chave JWT, chave do Jev) ficam nos *secrets* de cada Container App.
 - **Currículos:** a conta de armazenamento não aceita chaves (`allowSharedKeyAccess: false`); a API acessa com a própria identidade gerenciada, com permissão apenas de ler e gravar blobs.
-- **Rede:** só o frontend é público, e só por HTTPS. A API é interna. O PostgreSQL aceita apenas conexões vindas da Azure, com TLS e usuário próprio de cada ambiente.
+- **Rede:** só o frontend é público, e só por HTTPS. A API é interna e também recebe as chamadas do Nginx por HTTPS (os ambientes de Container Apps no modo Express não aceitam HTTP). O PostgreSQL aceita apenas conexões vindas da Azure, com TLS e usuário próprio de cada ambiente.
 - **Contêineres** rodam sem usuário root.
 
 ## Pipeline (GitHub Actions)

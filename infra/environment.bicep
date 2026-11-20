@@ -150,11 +150,10 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
     managedEnvironmentId: containerEnv.id
     configuration: {
       activeRevisionsMode: 'Single'
-      // Interna: só o frontend, dentro do mesmo ambiente, chama a API.
+      // Interna: só o frontend, dentro do mesmo ambiente, chama a API (por HTTPS, exigido pelo ambiente Express).
       ingress: {
         external: false
         targetPort: 8000
-        allowInsecure: true
         transport: 'auto'
       }
       secrets: [
@@ -224,7 +223,7 @@ resource web 'Microsoft.App/containerApps@2024-03-01' = {
           image: webImage
           resources: { cpu: json('0.25'), memory: '0.5Gi' }
           env: [
-            { name: 'API_URL', value: 'http://${apiName}' }
+            { name: 'API_URL', value: 'https://${api.properties.configuration.ingress.fqdn}' }
           ]
         }
       ]
