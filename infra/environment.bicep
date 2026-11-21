@@ -67,12 +67,22 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   tags: tags
   kind: 'StorageV2'
   sku: { name: 'Standard_LRS' }
+  identity: { type: 'SystemAssigned' }
   properties: {
     minimumTlsVersion: 'TLS1_2'
     supportsHttpsTrafficOnly: true
     allowBlobPublicAccess: false
     // Só identidades do Entra ID acessam: nenhuma chave da conta pode ser usada.
     allowSharedKeyAccess: false
+    // Currículos são dados pessoais: criptografia em repouso em duas camadas (serviço e infraestrutura).
+    encryption: {
+      keySource: 'Microsoft.Storage'
+      requireInfrastructureEncryption: true
+      services: {
+        blob: { enabled: true, keyType: 'Account' }
+        file: { enabled: true, keyType: 'Account' }
+      }
+    }
   }
 }
 
@@ -198,6 +208,8 @@ resource web 'Microsoft.App/containerApps@2024-03-01' = {
   name: webName
   location: location
   tags: tags
+  // Identidade própria do frontend, sem nenhuma permissão atribuída: se um dia precisar acessar algo, não usa chaves.
+  identity: { type: 'SystemAssigned' }
   properties: {
     managedEnvironmentId: containerEnv.id
     workloadProfileName: 'Consumption'

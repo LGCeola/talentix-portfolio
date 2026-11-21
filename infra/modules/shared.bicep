@@ -13,6 +13,7 @@ resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: 'log-talentix'
   location: location
   tags: tags
+  identity: { type: 'SystemAssigned' }
   properties: {
     sku: { name: 'PerGB2018' }
     retentionInDays: 30

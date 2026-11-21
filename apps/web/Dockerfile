@@ -6,7 +6,8 @@ WORKDIR /app
 # Usa a versão do pnpm definida em package.json (packageManager).
 RUN corepack enable
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+# --ignore-scripts: nenhum pacote executa scripts de instalação dentro da imagem (o build não precisa deles).
+RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
 RUN pnpm build
 
