@@ -106,6 +106,16 @@ describe('CandidateDashboard', () => {
     expect(wrapper.find('.dropzone').classes()).not.toContain('disabled')
   })
 
+  it('pede currículos fictícios só quando a análise externa (Jev) está ligada', async () => {
+    const wrapper = await render()
+    expect(wrapper.find('.test-notice').exists()).toBe(false)
+
+    await wrapper.findComponent({ name: 'CandidateVacancies' }).vm.$emit('external-analysis', true)
+
+    expect(wrapper.find('.test-notice').text()).toContain('envie apenas currículos fictícios')
+    expect(wrapper.find('.test-notice').text()).toContain('TypeSafe')
+  })
+
   it('exclui um currículo da lista', async () => {
     const wrapper = await render([RESUME])
     apiFetch.mockResolvedValueOnce(null)

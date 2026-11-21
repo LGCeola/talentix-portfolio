@@ -131,6 +131,9 @@ const props = defineProps({
   resumes: { type: Array, required: true },
 })
 
+// Informa ao painel se a análise externa (Jev) está ligada, para ele avisar já no envio do currículo.
+const emit = defineEmits(['external-analysis'])
+
 const vacancies = ref([])
 const applications = ref([])
 const loading = ref(true)
@@ -175,6 +178,7 @@ async function load() {
     vacancies.value = openVacancies
     applications.value = myApplications
     externalAnalysis.value = consentTerms.external_analysis
+    emit('external-analysis', externalAnalysis.value)
   } catch (requestError) {
     error.value = requestError.message
   } finally {

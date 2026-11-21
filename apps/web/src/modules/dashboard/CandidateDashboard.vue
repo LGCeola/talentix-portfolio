@@ -16,6 +16,12 @@
         <span>PDF ou TXT, até {{ MAX_SIZE_MB }} MB</span>
       </label>
 
+      <!-- Até a TypeSafe confirmar por quanto tempo guarda os textos recebidos (RFC 6.1). -->
+      <p v-if="externalAnalysis" class="test-notice" role="note">
+        <strong>Projeto acadêmico em testes: envie apenas currículos fictícios.</strong>
+        Ao se candidatar, o texto do currículo, sem nome e contatos, é analisado por um modelo de IA da TypeSafe, nos Estados Unidos.
+      </p>
+
       <p v-if="error" class="form-error" role="alert">{{ error }}</p>
       <p v-if="success" class="form-success" role="status">{{ success }}</p>
 
@@ -40,7 +46,7 @@
       <p v-else-if="!loading" class="empty">Nenhum currículo enviado ainda.</p>
     </section>
 
-    <CandidateVacancies :resumes="resumes" />
+    <CandidateVacancies :resumes="resumes" @external-analysis="externalAnalysis = $event" />
   </div>
 </template>
 
@@ -62,6 +68,7 @@ const deletingId = ref(null)
 const dragging = ref(false)
 const error = ref('')
 const success = ref('')
+const externalAnalysis = ref(false)
 
 onMounted(loadResumes)
 
@@ -194,6 +201,17 @@ h2 {
 .dropzone span {
   color: #64748b;
   font-size: .85rem;
+}
+
+.test-notice {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-left: 3px solid #d97706;
+  border-radius: 6px;
+  background: #fffbeb;
+  color: #78350f;
+  font-size: .85rem;
+  line-height: 1.45;
 }
 
 .form-error,
