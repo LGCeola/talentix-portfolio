@@ -17,18 +17,18 @@ Navegador ──HTTPS──▶ talentix-web-<env>  (Nginx + Vue, público)
 
 | Grupo de recursos | Conteúdo |
 | --- | --- |
-| `rg-talentix-shared` | PostgreSQL Flexible Server 18 (B1ms), com um banco e um usuário por ambiente; Log Analytics; identidade do GitHub Actions (`id-talentix-github`). |
+| `rg-talentix-shared` | PostgreSQL Flexible Server 18 (B1ms), com um banco e um usuário por ambiente; ambiente de contêineres `cae-talentix`, onde rodam os apps de dev e prod; Log Analytics; identidade do GitHub Actions (`id-talentix-github`). |
 | `rg-talentix-dev` | Ambiente de desenvolvimento: Container Apps (`talentix-web-dev`, `talentix-api-dev`), Storage Account e Application Insights. |
 | `rg-talentix-prod` | Ambiente de produção, separado do dev, com os mesmos recursos, mais o teste de disponibilidade e o alerta por e-mail. |
 
-**Ambientes:** um push na `develop` publica em **dev**; um push na `main`, feito só por pull request aprovado no CI, publica em **prod**. Cada ambiente tem o próprio banco, usuário, armazenamento, chave JWT e monitoramento: a API de dev não consegue ler os dados de prod.
+**Ambientes:** um push na `develop` publica em **dev**; um push na `main`, feito só por pull request aprovado no CI, publica em **prod**. Cada ambiente tem o próprio banco, usuário, armazenamento, chave JWT e monitoramento: a API de dev não consegue ler os dados de prod. O servidor do PostgreSQL e o ambiente de contêineres são compartilhados porque a assinatura Azure for Students permite um único ambiente de contêineres por região; os apps de cada ambiente continuam separados.
 
 ## Segurança
 
 - **Sem senhas no repositório.** O GitHub entra na Azure por OIDC: a identidade `id-talentix-github` só aceita tokens deste repositório, nos ambientes `dev` e `prod`, e só pode alterar os grupos `rg-talentix-dev` e `rg-talentix-prod`.
 - **Segredos** (URL do banco, chave JWT, chave do Jev) ficam nos *secrets* de cada Container App.
 - **Currículos:** a conta de armazenamento não aceita chaves (`allowSharedKeyAccess: false`); a API acessa com a própria identidade gerenciada, com permissão apenas de ler e gravar blobs.
-- **Rede:** só o frontend é público, e só por HTTPS. A API é interna e também recebe as chamadas do Nginx por HTTPS (os ambientes de Container Apps no modo Express não aceitam HTTP). O PostgreSQL aceita apenas conexões vindas da Azure, com TLS e usuário próprio de cada ambiente.
+- **Rede:** só o frontend é público, e só por HTTPS. A API é interna (endereço `.internal`, inacessível pela internet) e recebe as chamadas do Nginx por HTTPS. O ambiente de contêineres é criado explicitamente no modo *Workload Profiles* (perfil Consumption): o modo Express, padrão novo da Azure, não tem rede interna entre os apps. O PostgreSQL aceita apenas conexões vindas da Azure, com TLS e usuário próprio de cada ambiente.
 - **Contêineres** rodam sem usuário root.
 
 ## Pipeline (GitHub Actions)

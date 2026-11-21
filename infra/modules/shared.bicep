@@ -21,6 +21,28 @@ resource logs 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   }
 }
 
+// Um único ambiente de contêineres para dev e prod: a assinatura de estudante permite só um por região.
+// Sem escolher o modo, a Azure cria o modo Express, que não tem rede interna entre os apps.
+// O perfil Consumption cobra só pelo uso e desliga os contêineres sem acesso.
+resource containerEnv 'Microsoft.App/managedEnvironments@2026-07-01' = {
+  name: 'cae-talentix'
+  location: location
+  tags: tags
+  properties: {
+    environmentMode: 'WorkloadProfiles'
+    workloadProfiles: [
+      { name: 'Consumption', workloadProfileType: 'Consumption' }
+    ]
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: logs.properties.customerId
+        sharedKey: logs.listKeys().primarySharedKey
+      }
+    }
+  }
+}
+
 resource postgres 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = {
   name: 'psql-talentix-${suffix}'
   location: location

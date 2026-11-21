@@ -14,6 +14,7 @@ param webImage string
 @description('Grupo e nome do Log Analytics compartilhado (infra/main.bicep).')
 param sharedResourceGroup string = 'rg-talentix-shared'
 param logAnalyticsName string = 'log-talentix'
+param containerEnvironmentName string = 'cae-talentix'
 
 @description('Identidade do GitHub Actions, que recebe permissão para atualizar este ambiente.')
 param githubPrincipalId string
@@ -123,19 +124,11 @@ resource githubAccess 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 
 // ---------- Contêineres ----------
 
-resource containerEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
-  name: 'cae-talentix-${environmentName}'
-  location: location
-  tags: tags
-  properties: {
-    appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: logs.properties.customerId
-        sharedKey: logs.listKeys().primarySharedKey
-      }
-    }
-  }
+// Ambiente de contêineres compartilhado (infra/modules/shared.bicep): a assinatura de estudante permite um por
+// região. Dev e prod continuam separados em apps, banco, armazenamento, segredos e monitoramento.
+resource containerEnv 'Microsoft.App/managedEnvironments@2026-07-01' existing = {
+  name: containerEnvironmentName
+  scope: resourceGroup(sharedResourceGroup)
 }
 
 resource api 'Microsoft.App/containerApps@2024-03-01' = {
@@ -148,9 +141,10 @@ resource api 'Microsoft.App/containerApps@2024-03-01' = {
   }
   properties: {
     managedEnvironmentId: containerEnv.id
+    workloadProfileName: 'Consumption'
     configuration: {
       activeRevisionsMode: 'Single'
-      // Interna: só o frontend, dentro do mesmo ambiente, chama a API (por HTTPS, exigido pelo ambiente Express).
+      // Interna: só o frontend, dentro do mesmo ambiente, chama a API, pelo endereço interno e por HTTPS.
       ingress: {
         external: false
         targetPort: 8000
@@ -206,6 +200,7 @@ resource web 'Microsoft.App/containerApps@2024-03-01' = {
   tags: tags
   properties: {
     managedEnvironmentId: containerEnv.id
+    workloadProfileName: 'Consumption'
     configuration: {
       activeRevisionsMode: 'Single'
       // Público, só por HTTPS (certificado gerenciado pela Azure).
