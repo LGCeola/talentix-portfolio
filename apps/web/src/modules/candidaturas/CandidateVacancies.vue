@@ -46,7 +46,7 @@
                 Autorizo o compartilhamento do meu currículo e dos meus dados de contato com o recrutador desta vaga.
                 <template v-if="externalAnalysis">
                   Autorizo também o envio do texto do meu currículo à TypeSafe, nos Estados Unidos, para que um modelo de IA ajude a verificar os critérios da vaga. Antes do envio, removemos automaticamente nome, contatos e documentos, mas outros dados pessoais escritos no currículo podem não ser removidos.
-                  <br><br><strong>Essa autorização é necessária para se candidatar.</strong>
+                  <br><strong>Essa autorização é necessária para se candidatar.</strong><br><br>
                 </template>
               </span>
             </label>
