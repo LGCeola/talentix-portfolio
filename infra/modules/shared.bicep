@@ -48,6 +48,8 @@ resource postgres 'Microsoft.DBforPostgreSQL/flexibleServers@2024-08-01' = {
   name: 'psql-talentix-${suffix}'
   location: location
   tags: tags
+  // Identidade do próprio servidor, sem permissões extras: integrações futuras (ex.: chaves no Key Vault) dispensam senhas.
+  identity: { type: 'SystemAssigned' }
   sku: {
     name: 'Standard_B1ms'
     tier: 'Burstable'
