@@ -144,3 +144,72 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 # v8.4.1
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # Constrói as imagens publicadas na Azure e testa as duas juntas, como em produção.
+  docker:
+    name: Imagens Docker (build e teste de fumaça)
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: talentix
+          POSTGRES_DB: talentix_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U talentix"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Construir a imagem da API
+        run: docker build -f apps/backend/Dockerfile -t talentix-api:ci .
+
+      - name: Construir a imagem do frontend
+        run: docker build -t talentix-web:ci apps/web
+
+      # A API aplica as migrações ao subir; o Nginx serve o Vue e repassa /api para ela.
+      - name: Subir API e frontend
+        run: |
+          docker run -d --name api --network host \
+            -e DATABASE_URL=postgresql+psycopg2://talentix@localhost:5432/talentix_test \
+            -e JWT_SECRET_KEY=chave-usada-apenas-nos-testes-do-ci-0123456789 \
+            talentix-api:ci
+          docker run -d --name web --network host -e API_URL=http://localhost:8000 talentix-web:ci
+
+      - name: Conferir que a tela e a API respondem pelo frontend
+        run: |
+          for attempt in $(seq 1 30); do
+            curl -fsS http://localhost:8080/api/health && break
+            sleep 2
+          done
+          curl -fsS http://localhost:8080/api/health | grep '"status":"ok"'
+          curl -fsS http://localhost:8080/login | grep '<div id="app">'
+          curl -fsSI http://localhost:8080/ | grep -i 'x-content-type-options: nosniff'
+
+      - name: Logs dos contêineres
+        if: failure()
+        run: |
+          docker logs api
+          docker logs web
+
+  # Entrega contínua: só em push (develop → dev, main → prod) e só se todos os jobs acima passarem.
+  deploy:
+    name: Deploy (${{ github.ref_name == 'main' && 'prod' || 'dev' }})
+    needs: [backend, frontend, sonarqube, docker]
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}

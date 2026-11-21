@@ -37,6 +37,8 @@ O Talentix resolve esse desafio por meio de um **algoritmo próprio de pontuaç�
 - **Processamento & Algoritmo:** Engine própria em Python para extração, busca por termos e cálculo da nota, com apoio do Jev (TypeSafe) para estimar o nível de cada critério
 - **Banco de Dados:** PostgreSQL (com suporte a JSONB para detalhamento dinâmico de pontuações)
 - **Autenticação:** JWT, sem sessão no servidor
+- **Infraestrutura:** Azure (Container Apps, PostgreSQL Flexible Server, Blob Storage), criada com Bicep e publicada por GitHub Actions
+- **Qualidade e monitoramento:** Pytest e Vitest com metas de cobertura, SonarQube Cloud e Application Insights
 
 ---
 
@@ -48,7 +50,11 @@ talentix-portfolio/
 │   ├── backend/       # API REST, modelos de dados, regras de negócio e algoritmo
 │   └── web/           # Interface do usuário (SPA)
 ├── docs/              # Documentação técnica aprofundada, diagramas C4 e RFC
-│   └── RFC.md         # Documento de Request for Comments (RFC) completo
+│   ├── RFC.md         # Documento de Request for Comments (RFC) completo
+│   ├── BACKEND.md     # Como rodar a API, rotas, regras e testes
+│   └── DEPLOY.md      # Infraestrutura na Azure, pipeline e instruções de deploy
+├── infra/             # Infraestrutura como código (Bicep) e criação dos bancos
+├── .github/workflows/ # CI (testes, cobertura, SonarQube, Docker) e CD (deploy na Azure)
 └── README.md          # Visão geral do projeto
 ```
 
@@ -59,4 +65,6 @@ talentix-portfolio/
 Para detalhes aprofundados sobre arquitetura (Diagramas C4, modelo relacional), personas, pesquisa com usuários e requisitos funcionais/não funcionais, consulte:
 
 - 📄 **RFC no Repositório:** [`docs/RFC.md`](docs/RFC.md)
+- ⚙️ **Backend:** [`docs/BACKEND.md`](docs/BACKEND.md)
+- ☁️ **Deploy e infraestrutura:** [`docs/DEPLOY.md`](docs/DEPLOY.md)
 - 🌐 **Documento RFC (Google Docs):** [Acessar Documento RFC](https://docs.google.com/document/d/17bO6AqS8L75arfYSQFbCpSuSk0kW0wVpISinQlHUf00/edit?tab=t.0#heading=h.igeih6o6ng6b)

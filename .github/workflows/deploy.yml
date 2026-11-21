@@ -1,0 +1,112 @@
+# Entrega contínua: chamada pelo CI depois que testes, análise e imagens passam num push.
+# develop → ambiente dev; main → ambiente prod. A infraestrutura é criada pelos arquivos de infra/;
+# aqui só se publicam as imagens e se troca a versão dos contêineres.
+name: Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: dev ou prod
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publicar imagens (ghcr.io)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      api_image: ${{ steps.names.outputs.api }}
+      web_image: ${{ steps.names.outputs.web }}
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # O registro exige nomes em minúsculas; a tag é o commit, para saber exatamente o que está no ar.
+      - name: Nomes das imagens
+        id: names
+        run: |
+          prefix="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}"
+          echo "api=$prefix/talentix-api:$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+          echo "web=$prefix/talentix-web:$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Entrar no GitHub Container Registry
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+
+      - name: Construir e publicar
+        env:
+          API_IMAGE: ${{ steps.names.outputs.api }}
+          WEB_IMAGE: ${{ steps.names.outputs.web }}
+        run: |
+          source="org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+          docker build -f apps/backend/Dockerfile --label "$source" -t "$API_IMAGE" .
+          docker build --label "$source" -t "$WEB_IMAGE" apps/web
+          docker push "$API_IMAGE"
+          docker push "$WEB_IMAGE"
+
+  deploy:
+    name: Atualizar ${{ inputs.environment }} na Azure
+    needs: publish
+    # Até a identidade da Azure ser configurada no repositório, só as imagens são publicadas.
+    if: vars.AZURE_CLIENT_ID != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.app.outputs.url }}
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      GROUP: rg-talentix-${{ inputs.environment }}
+      API_APP: talentix-api-${{ inputs.environment }}
+      WEB_APP: talentix-web-${{ inputs.environment }}
+
+    steps:
+      # OIDC: o GitHub prova à Azure que é este repositório, neste ambiente. Nenhuma senha é guardada.
+      - name: Entrar na Azure
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # A API vai primeiro: ao subir, aplica as migrações antes do frontend novo chegar.
+      - name: Atualizar a API
+        env:
+          IMAGE: ${{ needs.publish.outputs.api_image }}
+        run: az containerapp update -g "$GROUP" -n "$API_APP" --image "$IMAGE" --output none
+
+      - name: Atualizar o frontend
+        env:
+          IMAGE: ${{ needs.publish.outputs.web_image }}
+        run: az containerapp update -g "$GROUP" -n "$WEB_APP" --image "$IMAGE" --output none
+
+      - name: Endereço do ambiente
+        id: app
+        run: echo "url=https://$(az containerapp show -g "$GROUP" -n "$WEB_APP" --query properties.configuration.ingress.fqdn -o tsv)" >> "$GITHUB_OUTPUT"
+
+      # Os contêineres podem estar desligados por falta de acessos: dá até 3 minutos para ligarem.
+      - name: Conferir que o ambiente responde
+        env:
+          URL: ${{ steps.app.outputs.url }}
+        run: |
+          for attempt in $(seq 1 18); do
+            if curl -fsS --max-time 30 "$URL/api/health"; then
+              curl -fsS --max-time 30 "$URL/login" | grep -q '<div id="app">'
+              echo "Ambiente no ar: $URL"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "O ambiente não respondeu ao /api/health" >&2
+          exit 1

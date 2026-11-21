@@ -1,0 +1,41 @@
+# Servidor do frontend em produção. ${API_URL} é preenchida ao iniciar o contêiner.
+server {
+  listen 8080;
+  server_name _;
+  root /usr/share/nginx/html;
+  server_tokens off;
+
+  # Currículos de até 5 MB, com folga para o restante do formulário.
+  client_max_body_size 6m;
+
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header X-Frame-Options "DENY" always;
+  add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+  # Chamadas da aplicação vão para a API, que só é acessível dentro do ambiente da Azure.
+  location /api/ {
+    proxy_pass ${API_URL};
+    proxy_http_version 1.1;
+    # Na Azure a API é chamada por HTTPS: envia o nome do servidor (SNI) para o roteador do ambiente achar a API.
+    proxy_ssl_server_name on;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;
+    proxy_read_timeout 60s;
+  }
+
+  # Arquivos gerados pelo build têm o hash no nome: podem ficar em cache por muito tempo.
+  location /assets/ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+    add_header X-Content-Type-Options "nosniff" always;
+  }
+
+  # Rotas do Vue Router (/login, /vagas/1...) caem no index.html.
+  location / {
+    try_files $uri $uri/ /index.html;
+    add_header Cache-Control "no-cache";
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+  }
+}
