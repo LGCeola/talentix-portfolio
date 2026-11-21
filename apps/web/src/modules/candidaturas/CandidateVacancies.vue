@@ -42,11 +42,11 @@
 
             <label class="consent">
               <input v-model="consent" type="checkbox" />
-              <span>
+              <span class="consent-text">
                 Autorizo o compartilhamento do meu currículo e dos meus dados de contato com o recrutador desta vaga.
                 <template v-if="externalAnalysis">
                   Autorizo também o envio do texto do meu currículo à TypeSafe, nos Estados Unidos, para que um modelo de IA ajude a verificar os critérios da vaga. Antes do envio, removemos automaticamente nome, contatos e documentos, mas outros dados pessoais escritos no currículo podem não ser removidos.
-                  <strong>Essa autorização é necessária para se candidatar.</strong>
+                  <br><strong>Essa autorização é necessária para se candidatar.</strong><br><br>
                 </template>
               </span>
             </label>
@@ -283,7 +283,6 @@ h2 {
   font-size: .88rem;
   line-height: 1.45;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   white-space: pre-line;
@@ -365,6 +364,12 @@ h2 {
   padding: 0;
   margin-top: 2px;
   flex-shrink: 0;
+}
+
+/* Texto do consentimento justificado; hyphens evita espaços grandes entre palavras em telas estreitas. */
+.consent-text {
+  text-align: justify;
+  hyphens: auto;
 }
 
 .apply-actions {
