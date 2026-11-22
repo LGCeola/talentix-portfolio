@@ -1,4 +1,5 @@
 import router from '../router/index.js'
+import { errorMessage } from './errors.js'
 
 const TOKEN_KEY = 'talentix_token'
 const USER_KEY = 'talentix_user'
@@ -18,12 +19,6 @@ export function saveCurrentUser(user) {
 export function clearSession() {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)
-}
-
-function errorMessage(data, fallback) {
-  if (typeof data?.detail === 'string') return data.detail
-  if (Array.isArray(data?.detail)) return data.detail[0]?.msg?.replace(/^Value error, /, '') || fallback
-  return fallback
 }
 
 // Baixa um arquivo protegido pelo login, como o currículo original de um candidato.

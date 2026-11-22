@@ -64,6 +64,37 @@ describe('LoginPage', () => {
     expect(wrapper.find('.form-error').text()).toBe('Não foi possível entrar. Verifique os seus dados.')
   })
 
+  it('pede para preencher os campos vazios sem chamar a API', async () => {
+    const fetch = vi.fn()
+    vi.stubGlobal('fetch', fetch)
+    const wrapper = mount(LoginPage, { global: { stubs } })
+
+    await submit(wrapper, '', '')
+
+    expect(wrapper.find('.form-error').text()).toBe('Preencha o e-mail e a senha.')
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('recusa e-mail mal formatado sem chamar a API', async () => {
+    const fetch = vi.fn()
+    vi.stubGlobal('fetch', fetch)
+    const wrapper = mount(LoginPage, { global: { stubs } })
+
+    await submit(wrapper, 'invalido', 'senha-123')
+
+    expect(wrapper.find('.form-error').text()).toBe('Informe um e-mail válido.')
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('mostra a mensagem de um erro de validação (422) em vez de [object Object]', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => respond(false, { detail: [{ msg: 'Value error, Senha inválida' }] })))
+    const wrapper = mount(LoginPage, { global: { stubs } })
+
+    await submit(wrapper)
+
+    expect(wrapper.find('.form-error').text()).toBe('Senha inválida')
+  })
+
   it('confirma o cadastro recém-criado', () => {
     route.query = { registered: '1' }
     expect(mount(LoginPage, { global: { stubs } }).find('.form-success').text()).toContain('Conta criada com sucesso')
