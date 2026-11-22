@@ -160,6 +160,8 @@ import Building2Icon from '~icons/lucide/building-2'
 import EyeIcon from '~icons/lucide/eye'
 import EyeOffIcon from '~icons/lucide/eye-off'
 import TargetIcon from '~icons/lucide/target'
+import { errorMessage } from '../../services/errors.js'
+import { isValidEmail } from '../../services/validation.js'
 
 const router = useRouter()
 
@@ -190,6 +192,16 @@ const strengthLabel = computed(() => {
 async function register() {
   error.value = ''
 
+  if (!name.value.trim() || !email.value.trim() || !password.value) {
+    error.value = 'Preencha o nome, o e-mail e a senha.'
+    return
+  }
+
+  if (!isValidEmail(email.value.trim())) {
+    error.value = 'Informe um e-mail válido, como nome@exemplo.com.'
+    return
+  }
+
   if (password.value.length < 8) {
     error.value = 'A senha deve ter no mínimo 8 caracteres.'
     return
@@ -211,7 +223,7 @@ async function register() {
 
     const data = await response.json()
     if (!response.ok) {
-      throw new Error(data.detail || 'Não foi possível criar a conta.')
+      throw new Error(errorMessage(data, 'Não foi possível criar a conta.'))
     }
 
     router.push({ name: 'Login', query: { registered: '1' } })

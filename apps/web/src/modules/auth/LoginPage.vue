@@ -32,9 +32,9 @@
           <input id="email" v-model.trim="email" type="email" autocomplete="email" placeholder="seu@email.com" required />
 
           <!-- <div class="label-row">
-            <label for="password">Senha</label>
             <a href="#" @click.prevent>Esqueci minha senha</a>
           </div> -->
+          <label for="password">Senha</label>
           <div class="password-input">
             <input id="password" v-model="password" :type="passwordVisible ? 'text' : 'password'" autocomplete="current-password" placeholder="Digite sua senha" minlength="8" required />
             <button type="button" class="show-password" @click="passwordVisible = !passwordVisible">
@@ -62,6 +62,8 @@ import { useRouter, useRoute } from 'vue-router'
 import CircleCheckIcon from '~icons/lucide/circle-check'
 import EyeIcon from '~icons/lucide/eye'
 import EyeOffIcon from '~icons/lucide/eye-off'
+import { errorMessage } from '../../services/errors.js'
+import { isValidEmail } from '../../services/validation.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -75,6 +77,18 @@ const registeredSuccess = ref(route.query.registered === '1')
 
 async function login() {
   error.value = ''
+
+  // Validação antes de chamar a API, com mensagem clara para campos vazios.
+  if (!email.value || !password.value) {
+    error.value = 'Preencha o e-mail e a senha.'
+    return
+  }
+
+  if (!isValidEmail(email.value)) {
+    error.value = 'Informe um e-mail válido.'
+    return
+  }
+
   loading.value = true
 
   try {
@@ -86,7 +100,7 @@ async function login() {
 
     const data = await response.json()
     if (!response.ok) {
-      throw new Error(data.detail || 'Não foi possível entrar. Verifique os seus dados.')
+      throw new Error(errorMessage(data, 'Não foi possível entrar. Verifique os seus dados.'))
     }
 
     localStorage.setItem('talentix_token', data.access_token)
