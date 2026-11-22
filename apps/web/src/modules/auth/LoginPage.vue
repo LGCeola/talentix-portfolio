@@ -31,10 +31,10 @@
           <label for="email">E-mail</label>
           <input id="email" v-model.trim="email" type="email" autocomplete="email" placeholder="seu@email.com" required />
 
-          <div class="label-row">
+          <!-- <div class="label-row">
             <label for="password">Senha</label>
             <a href="#" @click.prevent>Esqueci minha senha</a>
-          </div>
+          </div> -->
           <div class="password-input">
             <input id="password" v-model="password" :type="passwordVisible ? 'text' : 'password'" autocomplete="current-password" placeholder="Digite sua senha" minlength="8" required />
             <button type="button" class="show-password" @click="passwordVisible = !passwordVisible">
