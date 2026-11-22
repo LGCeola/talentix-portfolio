@@ -43,7 +43,7 @@
           <li>todas as suas candidaturas, inclusive as já avaliadas, e sua posição nos rankings.</li>
         </ul>
 
-        <form novalidate @submit.prevent="deleteAccount">
+        <form novalidate @submit.prevent="deleteDialogOpen = true">
           <label for="delete-password">Confirme sua senha</label>
           <input id="delete-password" v-model="deletePassword" type="password" autocomplete="current-password" />
 
@@ -59,6 +59,18 @@
           </button>
         </form>
       </section>
+
+      <ConfirmationDialog
+        v-model="deleteDialogOpen"
+        title="Excluir conta"
+        confirm-text="Excluir"
+        cancel-text="Voltar"
+        danger
+        :loading="deleting"
+        @confirm="deleteAccount"
+      >
+        <p><strong>Deseja mesmo excluir sua conta?</strong> <br>Todos os seus dados serão apagados e essa ação não pode ser desfeita.</p>
+      </ConfirmationDialog>
     </div>
   </AppLayout>
 </template>
@@ -67,6 +79,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppLayout from '../../components/AppLayout.vue'
+import ConfirmationDialog from '../../components/dialogs/ConfirmationDialog.vue'
 import { apiFetch, clearSession, getCurrentUser, saveCurrentUser } from '../../services/api.js'
 
 const router = useRouter()
@@ -85,6 +98,7 @@ const deletePassword = ref('')
 const deleteConfirmed = ref(false)
 const deleting = ref(false)
 const deleteError = ref('')
+const deleteDialogOpen = ref(false)
 
 const emailChanged = computed(() => email.value.toLowerCase() !== user.value?.email)
 
@@ -137,9 +151,11 @@ async function deleteAccount() {
     clearSession()
     router.push({ name: 'Login' })
   } catch (requestError) {
+    // Fecha o dialog para o erro (ex.: senha incorreta) aparecer no formulário.
     deleteError.value = requestError.message
   } finally {
     deleting.value = false
+    deleteDialogOpen.value = false
   }
 }
 </script>
