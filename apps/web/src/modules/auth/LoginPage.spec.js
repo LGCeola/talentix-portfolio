@@ -82,7 +82,7 @@ describe('LoginPage', () => {
 
     await submit(wrapper, 'invalido', 'senha-123')
 
-    expect(wrapper.find('.form-error').text()).toBe('Informe um e-mail válido, como nome@exemplo.com.')
+    expect(wrapper.find('.form-error').text()).toBe('Informe um e-mail válido.')
     expect(fetch).not.toHaveBeenCalled()
   })
 

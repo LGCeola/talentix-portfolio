@@ -198,7 +198,7 @@ async function register() {
   }
 
   if (!isValidEmail(email.value.trim())) {
-    error.value = 'Informe um e-mail válido, como nome@exemplo.com.'
+    error.value = 'Informe um e-mail válido.'
     return
   }
 
