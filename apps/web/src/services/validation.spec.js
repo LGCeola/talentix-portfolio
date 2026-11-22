@@ -6,7 +6,7 @@ describe('isValidEmail', () => {
     expect(isValidEmail(email)).toBe(true)
   })
 
-  it.each(['', 'ana', 'ana@', 'ana@exemplo', '@exemplo.com', 'ana silva@exemplo.com'])('recusa "%s"', (email) => {
+  it.each(['', 'ana', 'ana@', 'ana@exemplo', '@exemplo.com', 'ana silva@exemplo.com', 'ana@@exemplo.com', 'ana@.com', 'ana@exemplo.'])('recusa "%s"', (email) => {
     expect(isValidEmail(email)).toBe(false)
   })
 })
