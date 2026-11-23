@@ -22,6 +22,28 @@ Envie o token retornado pelo login no header `Authorization: Bearer <token>` par
 
 `GET /api/health` é pública e responde `200` com `{"status": "ok"}` quando a API e o banco estão no ar, ou `503` se o banco estiver fora. A Azure a usa para saber se o contêiner pode receber tráfego.
 
+## Como rodar os testes
+
+**Backend (pytest)**, a partir da raiz, com o ambiente virtual ativo (`.venv\Scripts\activate` no cmd, `.venv\Scripts\Activate.ps1` no PowerShell):
+
+```powershell
+python -m pytest apps/backend/tests                       # todos os testes
+python -m pytest apps/backend/tests --cov --cov-report=term   # com cobertura (falha abaixo de 75%)
+python -m pytest apps/backend/tests/test_storage.py -v    # um arquivo, listando cada teste
+```
+
+Os testes de API usam o PostgreSQL do `.env`. Com o banco desligado, eles aparecem como `skipped` e a cobertura cai.
+
+**Frontend (Vitest)**, de dentro de `apps/web` (na primeira vez, rode `pnpm install`):
+
+```powershell
+pnpm test                 # todos os testes (arquivos *.spec.js)
+pnpm test:coverage        # com cobertura (falha abaixo de 25%); relatório em coverage/index.html
+pnpm test LoginPage       # só os testes cujo arquivo contém "LoginPage"
+```
+
+O CI (`.github/workflows/ci.yml`) roda esses mesmos comandos a cada push e pull request.
+
 ## Autenticação
 
 | Método | Rota | Finalidade |
