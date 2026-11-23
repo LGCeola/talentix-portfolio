@@ -91,9 +91,10 @@ jobs:
         with:
           package_json_file: apps/web/package.json
 
+      # A versão do Node vem de apps/web/.nvmrc, a mesma usada localmente e no Dockerfile.
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version-file: apps/web/.nvmrc
           cache: pnpm
           cache-dependency-path: apps/web/pnpm-lock.yaml
 
