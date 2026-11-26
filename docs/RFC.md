@@ -363,6 +363,8 @@ Além disso, serão adotadas práticas de segurança recomendadas pela OWASP (Op
 
 Por conseguinte, devido à necessidade de envio de currículos, o sistema também apresentará mecanismos de proteção para upload de arquivos, permitindo apenas formatos previamente definidos, como **PDF ou texto**, limitando o tamanho de documentos e realizando validações para evitar o armazenamento de arquivos maliciosos. As informações sensíveis serão protegidas por criptografia (HTTPS/TLS) durante a comunicação, e as senhas armazenadas com técnicas robustas de hash.
 
+*Trabalho futuro:* recuperação de senha por e-mail, com token de uso único e validade curta. O envio pelo Azure Communication Services foi testado e funciona; antes de entrar em produção, precisa de um domínio próprio com SPF, DKIM e DMARC para os e-mails não caírem no spam.
+
 ### 6.1. PRIVACIDADE E LGPD
 A aplicação deverá seguir os princípios estabelecidos pela Lei Geral de Proteção de Dados (LGPD). Os dados coletados pelo sistema serão utilizados exclusivamente para as funcionalidades relacionadas à análise de currículos e gerenciamento de processos seletivos (como nome, e-mail e dados profissionais inseridos no currículo).
 
