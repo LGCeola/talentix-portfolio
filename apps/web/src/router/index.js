@@ -9,13 +9,13 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: () => import('../modules/auth/LoginPage.vue'),
-    meta: { guest: true },
+    meta: { guest: true, title: 'Entrar' },
   },
   {
     path: '/register',
     name: 'Register',
     component: () => import('../modules/auth/RegisterPage.vue'),
-    meta: { guest: true },
+    meta: { guest: true, title: 'Criar conta' },
   },
   {
     path: '/dashboard',
@@ -75,6 +75,11 @@ router.beforeEach((to) => {
       return { name: 'Dashboard' }
     }
   }
+})
+
+// Título da aba: "Talentix | Entrar" no login e no cadastro; só "Talentix" nas páginas de quem já entrou.
+router.afterEach((to) => {
+  document.title = to.meta.title ? `Talentix | ${to.meta.title}` : 'Talentix'
 })
 
 export default router
