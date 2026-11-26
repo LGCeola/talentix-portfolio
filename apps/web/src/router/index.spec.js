@@ -39,6 +39,16 @@ describe('proteção das rotas', () => {
     expect(await go('/vagas/1/candidaturas')).toBe('VacancyApplications')
   })
 
+  it('mostra "Entrar" no título só nas telas de login e cadastro', async () => {
+    expect(document.title).toBe('Talentix | Entrar')
+    await go('/register')
+    expect(document.title).toBe('Talentix | Criar conta')
+
+    login('candidate')
+    await go('/dashboard')
+    expect(document.title).toBe('Talentix')
+  })
+
   it('trata dados de usuário corrompidos como sem permissão', async () => {
     localStorage.setItem('talentix_token', 'abc')
     localStorage.setItem('talentix_user', '{inválido')
