@@ -456,19 +456,19 @@ A resposta indica uma oportunidade de melhoria relacionada à padronização das
 
 <br>
 
-**Avaliador 1:** ____________________________________________________
+**Avaliador 1:** (./imgs/ass_claudinei.png)
 
 - **Status:** 
-  - [ ] Aprovado
+  - [X] Aprovado
   - [ ] Ajustar
 - **Observações:** 
 
 <br><br><br>
 
-**Avaliador 2:** ____________________________________________________
+**Avaliador 2:** (./imgs/ass_janaina.png)
 
 - **Status:** 
-  - [ ] Aprovado
+  - [X] Aprovado
   - [ ] Ajustar
 - **Observações:** 
 
